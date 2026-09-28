@@ -6,7 +6,7 @@ from typing import Any
 import httpx
 from fastapi import Depends, FastAPI, Header, HTTPException, Path, Query
 
-app = FastAPI(title="Best Climate Avito Bridge", version="0.2.2")
+app = FastAPI(title="Best Climate Avito Bridge", version="0.3.0")
 
 AVITO_API_BASE = os.getenv("AVITO_API_BASE", "https://api.avito.ru").rstrip("/")
 AVITO_CLIENT_ID = os.getenv("AVITO_CLIENT_ID", "")
@@ -187,7 +187,7 @@ async def health() -> dict[str, Any]:
     return {
         "ok": True,
         "service": "bestclimate-avito-bridge",
-        "version": "0.2.2",
+        "version": "0.3.0",
         "avito_base": AVITO_API_BASE,
         "configured": bool(AVITO_CLIENT_ID and AVITO_CLIENT_SECRET and BRIDGE_SECRET),
         "mode": "read-only",
@@ -260,6 +260,49 @@ async def avito_autoload_ad_ids(
     query: str = Query(min_length=1, max_length=2000)
 ) -> Any:
     return await _avito_get("/autoload/v2/items/ad_ids", params={"query": query})
+
+
+@app.get("/avito/autoload/v4/uploads", dependencies=[Depends(authorize_bridge)])
+async def avito_autoload_v4_uploads(
+    page: int = Query(default=1, ge=1),
+    per_page: int = Query(default=20, ge=1, le=100),
+) -> Any:
+    return await _avito_get(
+        "/autoload/v4/uploads",
+        params={"page": page, "perPage": per_page},
+    )
+
+
+@app.get("/avito/autoload/v4/current", dependencies=[Depends(authorize_bridge)])
+async def avito_autoload_v4_current() -> Any:
+    return await _avito_get("/autoload/v4/uploads/current")
+
+
+@app.get("/avito/autoload/v4/current/items", dependencies=[Depends(authorize_bridge)])
+async def avito_autoload_v4_current_items(
+    page: int = Query(default=1, ge=1),
+    per_page: int = Query(default=100, ge=1, le=100),
+) -> Any:
+    return await _avito_get(
+        "/autoload/v4/uploads/current/items",
+        params={"page": page, "perPage": per_page},
+    )
+
+
+@app.get("/avito/autoload/v4/last-successful", dependencies=[Depends(authorize_bridge)])
+async def avito_autoload_v4_last_successful() -> Any:
+    return await _avito_get("/autoload/v4/uploads/last_successful")
+
+
+@app.get("/avito/autoload/v4/last-successful/items", dependencies=[Depends(authorize_bridge)])
+async def avito_autoload_v4_last_successful_items(
+    page: int = Query(default=1, ge=1),
+    per_page: int = Query(default=100, ge=1, le=100),
+) -> Any:
+    return await _avito_get(
+        "/autoload/v4/uploads/last_successful/items",
+        params={"page": page, "perPage": per_page},
+    )
 
 
 @app.get("/avito/ping", dependencies=[Depends(authorize_bridge)])
