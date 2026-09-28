@@ -5,7 +5,7 @@ BASE=os.getenv('AVITO_API_BASE','https://api.avito.ru').rstrip('/')
 CID=os.getenv('AVITO_CLIENT_ID','')
 CSEC=os.getenv('AVITO_CLIENT_SECRET','')
 SELECTED={8036734662,8036643856,8036277086,7748832830,3717069010,8292735844,8292158882,7556388793,4228840511,7332855703}
-SLUGS=['kondicioneri','kondicionirovanie','ventilyaciya','ventiljatsija']
+SLUGS=['kondicioneri','zapchasti_kondicionery','kondicionirovanie','ventilyaciya','ventiljatsija']
 
 async def token(c):
     r=await c.post(f'{BASE}/token',data={'grant_type':'client_credentials','client_id':CID,'client_secret':CSEC},headers={'Content-Type':'application/x-www-form-urlencoded'})
@@ -24,7 +24,6 @@ def summarize_field(f):
 def compact_item(x):
     keep=['id','itemId','title','status','url','price','category','categoryId','category_id','address','location','description','images','imageUrls','photos']
     d={k:x.get(k) for k in keep if x.get(k) is not None}
-    # keep top-level keys for discovery, without dumping everything
     d['_keys']=sorted(x.keys())
     return d
 
