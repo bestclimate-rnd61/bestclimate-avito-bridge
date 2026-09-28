@@ -3,27 +3,33 @@
 ## Verified live infrastructure
 - Railway project: `bestclimate-avito-bridge`.
 - Live service: `bestclimate-avito-bridge-live`.
-- Production deployment `6ebc0e85-d9a6-4dd6-a2a4-6f6537232631` is SUCCESS on commit `b50a31578a0cd14041eb871551a3e13cc148e3dd`.
-- Avito API auth is confirmed in production logs for account `90352839` / `Бест Климат Ростов - Климат, Отопление, Вентиляция`.
-- Railway `/health` returned HTTP 200 in production logs.
-- Bridge remains read-only for Avito mutation actions.
+- Current production diagnostic deployment: `0f04ba09-ca17-49aa-a145-1288b970292b`, commit `db214b9d8ae8d8edefd10d96e645b979f7a4e83c`.
+- Avito API auth confirmed for account `90352839` / `Бест Климат Ростов - Климат, Отопление, Вентиляция`.
+- `/health` returns HTTP 200.
+- Bridge/diagnostics are read-only for Avito mutation actions.
 
 ## Live loop snapshot
-First successful sanitized production monitor run reported:
-- `active_items = 21`;
-- `auth_ok = true`;
-- `low_balance = true` using bridge safety threshold `150`;
-- `/autoload/v4/uploads/current` returned HTTP 404;
-- `/autoload/v4/uploads/last_successful` returned HTTP 404.
-
-Interpretation lock: the two Autoload 404 responses are recorded as an unresolved state, not automatically interpreted as a broken account. No Autoload upload will be triggered until the profile/upload state is verified through a supported read path.
+- `active_items = 21`.
+- `auth_ok = true`.
+- `low_balance = true` using bridge safety threshold `150`.
+- Autoload profile is accessible and `autoload_enabled = true`.
+- Autoload `uploadMode = manual`.
+- Autoload `allow_pay_over_limit = false`.
+- Autoload upload history count = `0`.
+- Therefore `/autoload/v4/uploads/current` and `/autoload/v4/uploads/last_successful` returning HTTP 404 is consistent with there being no managed upload yet, not evidence by itself of broken API access.
 
 ## Current confirmed Autoload readiness
 - 10/10 selected priority listings have optimized controlled drafts.
 - 1/10 is feed-ready: Haier AvitoId `7748832830`.
 - 0/10 have been uploaded through the new managed feed.
 - Haier staging row preserves current AvitoId and current price and uses `ListingFee=Package` + `AdStatus=Free`.
-- Existing high-converting basket/Taganrog listings remain protected from bulk changes.
+- Existing strong listings remain protected from bulk changes.
+
+## Duplicate-prevention findings
+- VRF/ventilation ads `4228840511` and `4228587935` have the same title but are geographically different: Donetsk and Sochi. Do not treat them as duplicates solely from title.
+- Existing AQUA/TOWADA-related live cards include Donetsk `8479764928`, Moscow `8324639588`, Moscow `8305258576`, plus Lugansk `8461285020` whose title does not explicitly identify AQUA.
+- Because Moscow already has two AQUA TOWADA-related live cards, no new Moscow AQUA TOWADA row may be published until exact SKU/offer/performance mapping is resolved.
+- Duplicate-prevention map is stored in `AQUA_EXISTING_AVITO_MAP_2026-09-28.md`.
 
 ## AQUA rule
 - AQUA air-to-air heat pumps: owner-confirmed internal specification `обогрев до -30 °C` is allowed and should be used consistently for AQUA heat-pump campaign copy.
@@ -54,13 +60,9 @@ Priority catalog order:
 
 Profile copy, delivery/payment/warranty wording, avatar brief, banner brief and first-image rules are prepared in `AVITO_PROFILE_FINAL_PACK_2026-09-28.md`.
 
-## Monitor improvement
-The safe periodic read-only monitor is now LIVE in Railway production. It logs only sanitized state: API auth, active-item count, low-balance boolean, and current/last-successful Autoload status. It does not change Avito listings, prices or promotions and does not spend money.
-
 ## Next safe execution order
-1. Resolve Autoload 404 state using read-only profile/uploads diagnostics; do not upload anything.
-2. Treat `low_balance=true` as a hard paid-action risk lock.
-3. Inspect profile completeness and apply profile/banner/avatar fields only where UI/API access safely supports them.
+1. Keep low-balance hard lock on all paid actions.
+2. Map existing live AQUA cards to exact SKU/offer before any new feed row; compare the two Moscow cards first.
+3. Inspect profile completeness and apply profile/banner/avatar fields only where supported safe write access becomes available.
 4. Continue controlled migration: VRF/ventilation truthful fields -> basket leaf category -> concrete SKU rows.
-5. Prepare AQUA TOWADA 25/35/50 only after current selling price, inventory, images and exact Avito Vendor value are confirmed.
-6. Upload nothing until the relevant feed passes validation and duplicate/price safety checks.
+5. Upload nothing until each feed batch passes validation and duplicate/price safety checks.
