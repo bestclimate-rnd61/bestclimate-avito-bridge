@@ -1,10 +1,5 @@
-FROM php:8.2-apache
-RUN apt-get update \
- && apt-get install -y --no-install-recommends libcurl4-openssl-dev \
- && docker-php-ext-install curl \
- && rm -rf /var/lib/apt/lists/*
-COPY index.html /var/www/html/index.html
-COPY send.php /var/www/html/send.php
-COPY privacy.html /var/www/html/privacy.html
-COPY consent.html /var/www/html/consent.html
+FROM nginx:1.27-alpine
+COPY index.html /usr/share/nginx/html/index.html
+COPY privacy.html /usr/share/nginx/html/privacy.html
+COPY consent.html /usr/share/nginx/html/consent.html
 EXPOSE 80
