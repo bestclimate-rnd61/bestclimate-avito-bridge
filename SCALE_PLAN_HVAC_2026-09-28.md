@@ -26,11 +26,7 @@ A fifth brand is optional and should be added only after current model/price evi
 
 ### Verified product anchors
 #### AQUA TOWADA
-Current market listings confirm active TOWADA Premium Inverter models including:
-- AQI-35FIS1/R3-W;
-- AQI-50FIS1/R3-W.
-
-Best Climate already has internal/product knowledge for TOWADA 25-class as well. Exact claims (working temperature, warranty, Wi-Fi, noise, factory, etc.) must be copied only from the verified model specification used in each ad.
+Current official AQUA data confirms active TOWADA 25/35/50 classes. For the verified current AQI-25FIS1/R3 system, guaranteed heating operation is **-20…+24 °C**, not -30 °C. Therefore the scale campaign must not use a `-30 °C` claim for the currently verified TOWADA SKUs unless AQUA supplies a newer exact model specification proving it.
 
 #### Ballu ICE PEAK
 Ballu's own catalogue positions ICE PEAK as an air-to-air heat pump with operation on heating down to -30 °C. This is a strong low-temperature campaign anchor, but the exact model must be selected before publication.
@@ -60,7 +56,7 @@ Inside each listing:
 
 ### First-title frameworks
 Titles must stay model-led and search-led, e.g.:
-- `Тепловой насос AQUA TOWADA | Обогрев и охлаждение`
+- `AQUA TOWADA | Инвертор | Монтаж`
 - `Тепловой насос Ballu ICE PEAK | До -30 °C`
 - `Тепловой насос GREE | Инвертор | Монтаж`
 - `Тепловой насос Midea | Инвертор | Монтаж`
