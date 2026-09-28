@@ -1,20 +1,24 @@
+import asyncio
+import json
 import os
-import time
 import secrets
+import time
 from typing import Any
 
 import httpx
 from fastapi import Depends, FastAPI, Header, HTTPException, Path, Query
 
-app = FastAPI(title="Best Climate Avito Bridge", version="0.3.0")
+app = FastAPI(title="Best Climate Avito Bridge", version="0.4.0")
 
 AVITO_API_BASE = os.getenv("AVITO_API_BASE", "https://api.avito.ru").rstrip("/")
 AVITO_CLIENT_ID = os.getenv("AVITO_CLIENT_ID", "")
 AVITO_CLIENT_SECRET = os.getenv("AVITO_CLIENT_SECRET", "")
 BRIDGE_SECRET = os.getenv("BRIDGE_SECRET", "")
 LOW_BALANCE_THRESHOLD_RUB = 150.0
+MONITOR_INTERVAL_SECONDS = max(900, int(os.getenv("AVITO_MONITOR_INTERVAL_SECONDS", "3600")))
 
 _token_cache: dict[str, Any] = {"access_token": None, "expires_at": 0.0}
+_monitor_task: asyncio.Task[Any] | None = None
 
 
 def _require_config() -> None:
@@ -152,9 +156,104 @@ async def _balance_payload() -> dict[str, Any]:
     return payload
 
 
+def _count_items(payload: Any) -> int | None:
+    if isinstance(payload, list):
+        return len(payload)
+    if not isinstance(payload, dict):
+        return None
+    for container_key in ("meta", "pagination"):
+        container = payload.get(container_key)
+        if isinstance(container, dict):
+            for key in ("count", "total", "total_count"):
+                value = container.get(key)
+                if isinstance(value, int):
+                    return value
+    for key in ("resources", "items", "result"):
+        value = payload.get(key)
+        if isinstance(value, list):
+            return len(value)
+    return None
+
+
+def _compact_state(payload: Any) -> str | None:
+    if not isinstance(payload, dict):
+        return None
+    for key in ("status", "state", "uploadStatus", "upload_status"):
+        value = payload.get(key)
+        if isinstance(value, (str, int, float, bool)):
+            return str(value)[:120]
+    return "ok"
+
+
+async def _loop_summary_once() -> dict[str, Any]:
+    summary: dict[str, Any] = {
+        "auth_ok": False,
+        "active_items": None,
+        "low_balance": None,
+        "autoload_current": None,
+        "autoload_last_successful": None,
+    }
+
+    try:
+        profile = await _avito_get("/core/v1/accounts/self")
+        summary["auth_ok"] = isinstance(profile, dict)
+        if isinstance(profile, dict):
+            summary["profile_name"] = (
+                profile.get("name")
+                or profile.get("profile_name")
+                or profile.get("company_name")
+            )
+    except HTTPException as exc:
+        summary["auth_http"] = exc.status_code
+
+    try:
+        items = await _avito_get(
+            "/core/v1/items",
+            params={"status": "active", "page": 1, "per_page": 100},
+        )
+        summary["active_items"] = _count_items(items)
+    except HTTPException as exc:
+        summary["items_http"] = exc.status_code
+
+    try:
+        balance = await _balance_payload()
+        raw_real = balance.get("real")
+        real_balance = float(raw_real)
+        summary["low_balance"] = real_balance <= LOW_BALANCE_THRESHOLD_RUB
+    except (HTTPException, TypeError, ValueError) as exc:
+        summary["balance_http"] = exc.status_code if isinstance(exc, HTTPException) else 502
+
+    try:
+        current = await _avito_get("/autoload/v4/uploads/current")
+        summary["autoload_current"] = _compact_state(current)
+    except HTTPException as exc:
+        summary["autoload_current_http"] = exc.status_code
+
+    try:
+        last_success = await _avito_get("/autoload/v4/uploads/last_successful")
+        summary["autoload_last_successful"] = _compact_state(last_success)
+    except HTTPException as exc:
+        summary["autoload_last_successful_http"] = exc.status_code
+
+    return summary
+
+
+async def _monitor_loop() -> None:
+    while True:
+        try:
+            summary = await _loop_summary_once()
+            print(
+                "AVITO_LOOP_SUMMARY " + json.dumps(summary, ensure_ascii=False, sort_keys=True),
+                flush=True,
+            )
+        except Exception as exc:
+            print(f"AVITO_LOOP_SUMMARY_FAIL error_type={type(exc).__name__}", flush=True)
+        await asyncio.sleep(MONITOR_INTERVAL_SECONDS)
+
+
 @app.on_event("startup")
 async def startup_avito_probe() -> None:
-    """Verify Avito credentials on each deploy without logging secrets or tokens."""
+    global _monitor_task
     try:
         profile = await _avito_get("/core/v1/accounts/self")
         account_id = None
@@ -181,16 +280,28 @@ async def startup_avito_probe() -> None:
     except Exception as exc:
         print(f"AVITO_AUTH_FAIL error_type={type(exc).__name__}", flush=True)
 
+    if _monitor_task is None or _monitor_task.done():
+        _monitor_task = asyncio.create_task(_monitor_loop())
+
+
+@app.on_event("shutdown")
+async def shutdown_monitor() -> None:
+    global _monitor_task
+    if _monitor_task is not None:
+        _monitor_task.cancel()
+        _monitor_task = None
+
 
 @app.get("/health")
 async def health() -> dict[str, Any]:
     return {
         "ok": True,
         "service": "bestclimate-avito-bridge",
-        "version": "0.3.0",
+        "version": "0.4.0",
         "avito_base": AVITO_API_BASE,
         "configured": bool(AVITO_CLIENT_ID and AVITO_CLIENT_SECRET and BRIDGE_SECRET),
         "mode": "read-only",
+        "monitor_interval_seconds": MONITOR_INTERVAL_SECONDS,
     }
 
 
@@ -206,7 +317,6 @@ async def avito_balance() -> Any:
 
 @app.get("/avito/balance-watch")
 async def avito_balance_watch() -> dict[str, Any]:
-    """Public minimal monitor: exposes only low-balance state, never the raw wallet amount."""
     payload = await _balance_payload()
     raw_real = payload.get("real")
     try:
