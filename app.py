@@ -6,7 +6,7 @@ from typing import Any
 import httpx
 from fastapi import Depends, FastAPI, Header, HTTPException, Path, Query
 
-app = FastAPI(title="Best Climate Avito Bridge", version="0.2.0")
+app = FastAPI(title="Best Climate Avito Bridge", version="0.2.1")
 
 AVITO_API_BASE = os.getenv("AVITO_API_BASE", "https://api.avito.ru").rstrip("/")
 AVITO_CLIENT_ID = os.getenv("AVITO_CLIENT_ID", "")
@@ -178,7 +178,7 @@ async def health() -> dict[str, Any]:
     return {
         "ok": True,
         "service": "bestclimate-avito-bridge",
-        "version": "0.2.0",
+        "version": "0.2.1",
         "avito_base": AVITO_API_BASE,
         "configured": bool(AVITO_CLIENT_ID and AVITO_CLIENT_SECRET and BRIDGE_SECRET),
         "mode": "read-only",
@@ -188,6 +188,12 @@ async def health() -> dict[str, Any]:
 @app.get("/avito/self", dependencies=[Depends(authorize_bridge)])
 async def avito_self() -> Any:
     return await _avito_get("/core/v1/accounts/self")
+
+
+@app.get("/avito/balance", dependencies=[Depends(authorize_bridge)])
+async def avito_balance() -> Any:
+    user_id = await _account_id()
+    return await _avito_get(f"/core/v1/accounts/{user_id}/balance/")
 
 
 @app.get("/avito/items", dependencies=[Depends(authorize_bridge)])
