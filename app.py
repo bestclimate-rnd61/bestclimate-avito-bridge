@@ -6,12 +6,13 @@ from typing import Any
 import httpx
 from fastapi import Depends, FastAPI, Header, HTTPException, Path, Query
 
-app = FastAPI(title="Best Climate Avito Bridge", version="0.2.1")
+app = FastAPI(title="Best Climate Avito Bridge", version="0.2.2")
 
 AVITO_API_BASE = os.getenv("AVITO_API_BASE", "https://api.avito.ru").rstrip("/")
 AVITO_CLIENT_ID = os.getenv("AVITO_CLIENT_ID", "")
 AVITO_CLIENT_SECRET = os.getenv("AVITO_CLIENT_SECRET", "")
 BRIDGE_SECRET = os.getenv("BRIDGE_SECRET", "")
+LOW_BALANCE_THRESHOLD_RUB = 150.0
 
 _token_cache: dict[str, Any] = {"access_token": None, "expires_at": 0.0}
 
@@ -143,6 +144,14 @@ async def _account_id() -> int:
         raise HTTPException(status_code=502, detail="Avito account id is missing")
 
 
+async def _balance_payload() -> dict[str, Any]:
+    user_id = await _account_id()
+    payload = await _avito_get(f"/core/v1/accounts/{user_id}/balance/")
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=502, detail="Unexpected Avito balance response")
+    return payload
+
+
 @app.on_event("startup")
 async def startup_avito_probe() -> None:
     """Verify Avito credentials on each deploy without logging secrets or tokens."""
@@ -178,7 +187,7 @@ async def health() -> dict[str, Any]:
     return {
         "ok": True,
         "service": "bestclimate-avito-bridge",
-        "version": "0.2.1",
+        "version": "0.2.2",
         "avito_base": AVITO_API_BASE,
         "configured": bool(AVITO_CLIENT_ID and AVITO_CLIENT_SECRET and BRIDGE_SECRET),
         "mode": "read-only",
@@ -192,8 +201,23 @@ async def avito_self() -> Any:
 
 @app.get("/avito/balance", dependencies=[Depends(authorize_bridge)])
 async def avito_balance() -> Any:
-    user_id = await _account_id()
-    return await _avito_get(f"/core/v1/accounts/{user_id}/balance/")
+    return await _balance_payload()
+
+
+@app.get("/avito/balance-watch")
+async def avito_balance_watch() -> dict[str, Any]:
+    """Public minimal monitor: exposes only low-balance state, never the raw wallet amount."""
+    payload = await _balance_payload()
+    raw_real = payload.get("real")
+    try:
+        real_balance = float(raw_real)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=502, detail="Avito real balance is missing")
+    return {
+        "ok": True,
+        "low_balance": real_balance <= LOW_BALANCE_THRESHOLD_RUB,
+        "threshold_rub": LOW_BALANCE_THRESHOLD_RUB,
+    }
 
 
 @app.get("/avito/items", dependencies=[Depends(authorize_bridge)])
