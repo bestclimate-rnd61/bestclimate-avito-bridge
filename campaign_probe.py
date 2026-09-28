@@ -14,14 +14,34 @@ def _items_list(payload: Any) -> list[dict[str, Any]]:
     return []
 
 
+def _trim(value: Any, limit: int = 2400) -> Any:
+    if isinstance(value, str):
+        return value[:limit]
+    return value
+
+
 def _safe_item(item: dict[str, Any]) -> dict[str, Any]:
-    return {
+    safe = {
         "id": item.get("id") or item.get("item_id") or item.get("avito_id"),
         "title": item.get("title") or item.get("name"),
         "price": item.get("price"),
         "status": item.get("status") or item.get("state"),
         "url": item.get("url") or item.get("uri") or item.get("link"),
     }
+    # Public listing fields only. Never expose contacts, auth, billing or seller-private data.
+    for key in (
+        "description",
+        "address",
+        "location",
+        "category",
+        "category_id",
+        "params",
+        "parameters",
+        "attributes",
+    ):
+        if key in item and item.get(key) is not None:
+            safe[key] = _trim(item.get(key))
+    return safe
 
 
 def _safe_profile(profile: Any) -> dict[str, Any]:
@@ -34,6 +54,9 @@ def _safe_profile(profile: Any) -> dict[str, Any]:
         "status": profile.get("status") or profile.get("state"),
         "feed_urls": feed_urls,
         "schedule": profile.get("schedule") or profile.get("autoload_schedule"),
+        "uploadMode": profile.get("uploadMode"),
+        "autoload_enabled": profile.get("autoload_enabled"),
+        "allow_pay_over_limit": profile.get("allow_pay_over_limit"),
     }
 
 
