@@ -1,0 +1,55 @@
+{
+  "profile": "Бест Климат Ростов — Климат, Отопление, Вентиляция",
+  "created_at": "2026-09-28",
+  "mode": "staging_no_upload",
+  "safety": {
+    "listing_fee": "Package",
+    "ad_status": "Free",
+    "no_paid_promotion": true,
+    "preserve_avito_id": true,
+    "preserve_base_price": true
+  },
+  "feed_ready_items": [
+    {
+      "avito_id": 7748832830,
+      "internal_id": "BC-7748832830",
+      "city": "Ростов-на-Дону",
+      "base_price": 18990,
+      "title": "Кондиционеры Haier | Продажа и установка",
+      "description": "Новые настенные сплит-системы Haier для квартиры, дома, офиса и коммерческих помещений. В наличии представлены серии TUNDRA, CORAL и инверторные HPL2.\n\nПоможем подобрать модель по площади, бюджету и задачам помещения. Выполняем доставку, профессиональный монтаж, закладку трасс, вакуумирование, пусконаладку, обслуживание и ремонт.\n\nНапишите площадь помещения и количество комнат — подготовим несколько подходящих вариантов и рассчитаем оборудование с установкой.",
+      "fields": {
+        "ListingFee": "Package",
+        "AdStatus": "Free",
+        "Address": "Ростовская обл., Ростов-на-Дону",
+        "ContactMethod": "По телефону и в сообщениях",
+        "Category": "Бытовая техника",
+        "Price": 18990,
+        "AdType": "Товар приобретен на продажу",
+        "GoodsType": "Климатическое оборудование",
+        "ProductType": "Кондиционеры и запчасти",
+        "Condition": "Новое",
+        "GoodsSubType": "Кондиционеры",
+        "Vendor": "Haier",
+        "AirConditionerType": "Сплит-система",
+        "AirConditionerSubType": "Настенный"
+      },
+      "images": [
+        "https://90.img.avito.st/image/1/1.VrQQx7a4-l0mcHhQMIpM1VZm-FuuZnhLJmv4X6Bu8lem.u2iEhoxe121xNFlxgmqI9p0OIQV9x_gKoR8PZ2w0dek",
+        "https://10.img.avito.st/image/1/1.Z1WYa7a4y7yu3Emx2mJ4NN7KybomykmqrsfJvijCw7Yu.SxpZMqnm_fkN6GqBpBn5Eg_oxp967rD_jKbMGSussb0?cqp=2.YN7dHnrK-mhyvtTBpyubvaFoUVdTM3W7BFy5YaeXzZ_Q2glMrBb_s4irqaJhHlfJPgeDGUqVXQ==",
+        "https://30.img.avito.st/image/1/1.3uQrcra4cg0dxfAAGxmxnRLScAuV0_AbHd5wD5vbeged.WMf-c1nJn57t6fk3JKEpiQ0wvY66FHC1lU_8ZAh3VKQ?cqp=2.YN7dHnrK-mhyvtTBpyubvaFoUVdTM3W7BFy5YaeXzZ_Q2glMrBb_s4irqaJhHlfJPgeDGUqVXQ=="
+      ],
+      "verified_public_attributes": {
+        "manufacturer": "Haier",
+        "air_conditioner_type": "Сплит-система",
+        "air_conditioner_subtype": "Настенный",
+        "goods_subtype": "Кондиционеры",
+        "condition": "Новое",
+        "series_seen_in_description": ["TUNDRA", "CORAL", "HPL2"]
+      },
+      "feed_file": "avito_feed_batch_01_haier.xml",
+      "feed_ready": true,
+      "uploaded_to_avito": false,
+      "paid_promotion_enabled": false
+    }
+  ]
+}
