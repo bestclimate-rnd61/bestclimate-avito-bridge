@@ -30,6 +30,28 @@ def _require_config() -> None:
         raise HTTPException(status_code=503, detail={"missing_env": missing})
 
 
+def _safe_token_diag(response: httpx.Response) -> dict[str, Any]:
+    diag: dict[str, Any] = {
+        "status": response.status_code,
+        "content_type": response.headers.get("content-type", "")[:120],
+    }
+    try:
+        payload = response.json()
+    except ValueError:
+        diag["json_keys"] = []
+        return diag
+
+    if isinstance(payload, dict):
+        diag["json_keys"] = sorted(str(k) for k in payload.keys())[:30]
+        for key in ("error", "error_description", "message", "code", "type"):
+            value = payload.get(key)
+            if isinstance(value, (str, int, float, bool)):
+                diag[key] = str(value)[:300]
+    else:
+        diag["json_keys"] = []
+    return diag
+
+
 def authorize_bridge(
     x_bridge_secret: str | None = Header(default=None, alias="X-Bridge-Secret"),
     authorization: str | None = Header(default=None),
@@ -62,16 +84,19 @@ async def _get_token(force_refresh: bool = False) -> str:
             },
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
-    if response.status_code >= 400:
-        raise HTTPException(
-            status_code=502,
-            detail={"stage": "token", "status": response.status_code, "body": response.text[:500]},
-        )
 
-    payload = response.json()
-    access_token = payload.get("access_token")
+    diag = _safe_token_diag(response)
+    if response.status_code >= 400:
+        raise HTTPException(status_code=502, detail={"stage": "token", **diag})
+
+    try:
+        payload = response.json()
+    except ValueError:
+        raise HTTPException(status_code=502, detail={"stage": "token", **diag})
+
+    access_token = payload.get("access_token") if isinstance(payload, dict) else None
     if not access_token:
-        raise HTTPException(status_code=502, detail={"stage": "token", "body": payload})
+        raise HTTPException(status_code=502, detail={"stage": "token", **diag})
 
     expires_in = int(payload.get("expires_in", 3600))
     _token_cache["access_token"] = access_token
@@ -109,7 +134,7 @@ async def _avito_get(path: str, params: dict[str, Any] | None = None) -> Any:
 
 @app.on_event("startup")
 async def startup_avito_probe() -> None:
-    """Verify Avito credentials on each deploy without logging any secrets."""
+    """Verify Avito credentials on each deploy without logging secrets or tokens."""
     try:
         profile = await _avito_get("/core/v1/accounts/self")
         account_id = None
@@ -120,14 +145,19 @@ async def startup_avito_probe() -> None:
         print(f"AVITO_AUTH_OK account_id={account_id!r} name={name!r}", flush=True)
     except HTTPException as exc:
         detail = exc.detail if isinstance(exc.detail, dict) else {}
-        stage = detail.get("stage")
-        upstream_status = detail.get("status")
-        path = detail.get("path")
-        print(
-            f"AVITO_AUTH_FAIL http_status={exc.status_code} stage={stage!r} "
-            f"upstream_status={upstream_status!r} path={path!r}",
-            flush=True,
-        )
+        safe = {
+            "http_status": exc.status_code,
+            "stage": detail.get("stage"),
+            "upstream_status": detail.get("status"),
+            "content_type": detail.get("content_type"),
+            "json_keys": detail.get("json_keys"),
+            "error": detail.get("error"),
+            "error_description": detail.get("error_description"),
+            "message": detail.get("message"),
+            "code": detail.get("code"),
+            "path": detail.get("path"),
+        }
+        print(f"AVITO_AUTH_FAIL {safe!r}", flush=True)
     except Exception as exc:
         print(f"AVITO_AUTH_FAIL error_type={type(exc).__name__}", flush=True)
 
