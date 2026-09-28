@@ -4,9 +4,9 @@ import secrets
 from typing import Any
 
 import httpx
-from fastapi import Depends, FastAPI, Header, HTTPException, Query
+from fastapi import Depends, FastAPI, Header, HTTPException, Path, Query
 
-app = FastAPI(title="Best Climate Avito Bridge", version="0.1.0")
+app = FastAPI(title="Best Climate Avito Bridge", version="0.2.0")
 
 AVITO_API_BASE = os.getenv("AVITO_API_BASE", "https://api.avito.ru").rstrip("/")
 AVITO_CLIENT_ID = os.getenv("AVITO_CLIENT_ID", "")
@@ -132,6 +132,17 @@ async def _avito_get(path: str, params: dict[str, Any] | None = None) -> Any:
         return {"text": response.text}
 
 
+async def _account_id() -> int:
+    profile = await _avito_get("/core/v1/accounts/self")
+    if not isinstance(profile, dict):
+        raise HTTPException(status_code=502, detail="Unexpected Avito profile response")
+    raw = profile.get("id") or profile.get("user_id") or profile.get("account_id")
+    try:
+        return int(raw)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=502, detail="Avito account id is missing")
+
+
 @app.on_event("startup")
 async def startup_avito_probe() -> None:
     """Verify Avito credentials on each deploy without logging secrets or tokens."""
@@ -167,6 +178,7 @@ async def health() -> dict[str, Any]:
     return {
         "ok": True,
         "service": "bestclimate-avito-bridge",
+        "version": "0.2.0",
         "avito_base": AVITO_API_BASE,
         "configured": bool(AVITO_CLIENT_ID and AVITO_CLIENT_SECRET and BRIDGE_SECRET),
         "mode": "read-only",
@@ -188,6 +200,36 @@ async def avito_items(
         "/core/v1/items",
         params={"status": status, "page": page, "per_page": per_page},
     )
+
+
+@app.get("/avito/item/{item_id}", dependencies=[Depends(authorize_bridge)])
+async def avito_item(item_id: int = Path(ge=1)) -> Any:
+    user_id = await _account_id()
+    return await _avito_get(f"/core/v1/accounts/{user_id}/items/{item_id}/")
+
+
+@app.get("/avito/autoload/profile", dependencies=[Depends(authorize_bridge)])
+async def avito_autoload_profile() -> Any:
+    return await _avito_get("/autoload/v2/profile")
+
+
+@app.get("/avito/autoload/tree", dependencies=[Depends(authorize_bridge)])
+async def avito_autoload_tree() -> Any:
+    return await _avito_get("/autoload/v1/user-docs/tree")
+
+
+@app.get("/avito/autoload/category/{slug}/fields", dependencies=[Depends(authorize_bridge)])
+async def avito_autoload_category_fields(
+    slug: str = Path(min_length=1, max_length=120, pattern=r"^[A-Za-z0-9_-]+$")
+) -> Any:
+    return await _avito_get(f"/autoload/v1/user-docs/node/{slug}/fields")
+
+
+@app.get("/avito/autoload/ad-ids", dependencies=[Depends(authorize_bridge)])
+async def avito_autoload_ad_ids(
+    query: str = Query(min_length=1, max_length=2000)
+) -> Any:
+    return await _avito_get("/autoload/v2/items/ad_ids", params={"query": query})
 
 
 @app.get("/avito/ping", dependencies=[Depends(authorize_bridge)])
