@@ -10,6 +10,12 @@ AQUA is the owner's own/private brand. The brand owner has explicitly confirmed 
 
 Campaign rule: use `до -30 °C на обогрев` for AQUA TOWADA heat-pump advertising, including titles, first-screen visuals and descriptions. Treat this as an **internal brand/manufacturer specification supplied by the owner**. Do not present it as independently verified from the current public AQUA catalog if the public page shows a different figure.
 
+## Core commercial offer — mandatory across campaign
+- **Бесплатная доставка** по всей России, ЛНР, ДНР, Крыму и Абхазии.
+- Delivery is paid by Best Climate and must be presented as part of the offer, not as a hidden discount.
+- Main customer CTA: `Напишите площадь помещения и город — подберём модель и посчитаем итог.`
+- Do not optimize for maximum raw clicks. Optimize for **qualified clicks → contacts → cost per contact → sale → net profit**.
+
 ---
 
 ## TOWADA lineup anchors
@@ -59,7 +65,7 @@ Do **not** collapse 25/35/50 into one fake “universal” item for Autoload. Us
 **First screen copy:**
 `Тепловой насос воздух-воздух AQUA TOWADA для квартиры, дома и офиса. Обогрев до -30 °C, 2,6 кВт холод / 3,0 кВт тепло, A+++ на охлаждении, тихий режим 19 дБ.`
 
-`Подберём монтаж под объект, доставим по РФ. Цена оборудования и монтаж считаются отдельно.`
+`Бесплатная доставка по России, ЛНР, ДНР, Крыму и Абхазии. Монтаж рассчитывается отдельно.`
 
 **Core factual/brand bullets:**
 - до 25 м²;
@@ -70,9 +76,10 @@ Do **not** collapse 25/35/50 into one fake “universal” item for Autoload. Us
 - **обогрев до -30 °C — внутренний брендовый параметр, подтверждён владельцем AQUA**;
 - 19 dB(A) quiet mode;
 - R32;
-- white color; black variant only if exact SKU is available.
+- white color; black variant only if exact SKU is available;
+- **бесплатная доставка**.
 
-**CTA:** `Напишите площадь помещения и город — рассчитаем оборудование, доставку и монтаж.`
+**CTA:** `Напишите площадь помещения и город — подберём модель и посчитаем итог.`
 
 ### Ad B — 35 class
 **Internal campaign ID:** `HP-AQUA-TOWADA-35`
@@ -84,7 +91,7 @@ Do **not** collapse 25/35/50 into one fake “universal” item for Autoload. Us
 **First screen copy:**
 `AQUA TOWADA 35: тепловой насос воздух-воздух с обогревом до -30 °C, 3,5 кВт на охлаждение и 3,7 кВт на обогрев. Подходит для помещений до 35 м² при корректном теплотехническом подборе.`
 
-`Есть профессиональный монтаж, доставка и запуск системы.`
+`Бесплатная доставка по России, ЛНР, ДНР, Крыму и Абхазии. Есть профессиональный монтаж и запуск системы.`
 
 ### Ad C — 50 class
 **Internal campaign ID:** `HP-AQUA-TOWADA-50`
@@ -96,7 +103,62 @@ Do **not** collapse 25/35/50 into one fake “universal” item for Autoload. Us
 **First screen copy:**
 `AQUA TOWADA 50 для больших комнат, домов, офисов и коммерческих помещений: обогрев до -30 °C, 5,3 кВт холод / 6,0 кВт тепло.`
 
-`Подберём трассу, монтаж и доставку под объект.`
+`Бесплатная доставка по России, ЛНР, ДНР, Крыму и Абхазии. Подберём трассу и монтаж под объект.`
+
+---
+
+## CPC / cost-per-contact optimization rules
+
+For the current Avito pay-per-click tariff, the campaign must minimize wasted clicks rather than maximize raw CTR.
+
+1. **One search intent = one ad angle**
+   - `тепловой насос воздух-воздух`
+   - `отопление дома без газа`
+   - `кондиционер на обогрев до -30 °C`
+
+2. **First image must pre-qualify**
+   Use 3–5 claims only:
+   - `AQUA TOWADA`
+   - `ТЕПЛОВОЙ НАСОС ВОЗДУХ-ВОЗДУХ`
+   - `ОБОГРЕВ ДО -30 °C`
+   - exact area class
+   - `БЕСПЛАТНАЯ ДОСТАВКА`
+
+3. **Show a real selling price for the exact SKU**
+   Avoid artificial low teaser prices that attract non-buying clicks.
+
+4. **First 2–3 lines must qualify intent**
+   Product + area + -30 °C + free delivery + CTA.
+
+5. **Do not duplicate identical listings in the same city**
+   Each city gets distinct intent/creative/price row, not spam clones.
+
+6. **Decision KPI hierarchy**
+   - CPC
+   - click → contact conversion
+   - cost per contact
+   - contact → sale conversion
+   - net profit per sale
+
+7. **Pause logic**
+   Ads with cheap clicks but weak contact conversion are losers and should be paused or rewritten.
+
+---
+
+## First-wave geography
+
+Priority wave for testing and scale:
+1. Москва и Московская область
+2. Ростов-на-Дону / Батайск / Аксай / Азов
+3. Краснодарский край / Краснодар / Сочи
+4. Донецк / ДНР
+5. Луганск / ЛНР
+6. Крым
+7. Владимир
+8. Санкт-Петербург
+9. Абхазия — use only where Avito category/location publishing supports the intended geography; otherwise route demand through nearby supported geography and free-delivery offer without misleading location data.
+
+Do not create fake local-presence claims. Localize title/description/delivery honestly.
 
 ---
 
@@ -107,7 +169,7 @@ Use only 3–5 claims per visual:
 2. `ТЕПЛОВОЙ НАСОС ВОЗДУХ-ВОЗДУХ`
 3. `ОБОГРЕВ ДО -30 °C`
 4. exact area class: `до 25 м²` / `до 35 м²` / `до 50 м²`
-5. `INVERTER` or `A+++` where appropriate
+5. `БЕСПЛАТНАЯ ДОСТАВКА` or `A+++` depending on the test
 
 For AQUA, `до -30 °C` is an owner-authorized internal brand claim and should be retained consistently across campaign materials.
 
@@ -115,6 +177,7 @@ For AQUA, `до -30 °C` is an owner-authorized internal brand claim and should 
 - Keep existing Best Climate live prices if they correspond to real stock and are lower than official catalog reference.
 - Do not automatically overwrite live Avito pricing with the official recommended/catalog price.
 - Every ad row gets its own real SKU price.
+- Free delivery must be reflected in unit economics when evaluating net profit.
 
 ## Autoload mapping
 Use the already-probed household AC category fields:
@@ -139,6 +202,8 @@ Use the already-probed household AC category fields:
 
 ## Next build
 After AQUA assets are resolved:
-1. Ballu ICE PEAK exact SKU matrix with verified -30 °C claim.
-2. GREE low-temperature exact SKU verification.
-3. Midea low-temperature exact SKU verification.
+1. Build first-wave city × intent × SKU matrix.
+2. Validate feed rows.
+3. Publish only after write/publishing capability is deliberately enabled and reviewed.
+4. Track CPC → contact → sale → net profit and scale winners.
+5. Then build Ballu ICE PEAK, GREE and Midea low-temperature matrices separately.
