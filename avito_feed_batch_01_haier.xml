@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Ads formatVersion="3" target="Avito.ru">
+  <Ad>
+    <Id>BC-7748832830</Id>
+    <AvitoId>7748832830</AvitoId>
+    <ListingFee>Package</ListingFee>
+    <AdStatus>Free</AdStatus>
+    <Address>Ростовская обл., Ростов-на-Дону</Address>
+    <Title>Кондиционеры Haier | Продажа и установка</Title>
+    <Description><![CDATA[Новые настенные сплит-системы Haier для квартиры, дома, офиса и коммерческих помещений. В наличии представлены серии TUNDRA, CORAL и инверторные HPL2.
+
+Поможем подобрать модель по площади, бюджету и задачам помещения. Выполняем доставку, профессиональный монтаж, закладку трасс, вакуумирование, пусконаладку, обслуживание и ремонт.
+
+Напишите площадь помещения и количество комнат — подготовим несколько подходящих вариантов и рассчитаем оборудование с установкой.]]></Description>
+    <Images>
+      <Image url="https://90.img.avito.st/image/1/1.VrQQx7a4-l0mcHhQMIpM1VZm-FuuZnhLJmv4X6Bu8lem.u2iEhoxe121xNFlxgmqI9p0OIQV9x_gKoR8PZ2w0dek" />
+      <Image url="https://10.img.avito.st/image/1/1.Z1WYa7a4y7yu3Emx2mJ4NN7KybomykmqrsfJvijCw7Yu.SxpZMqnm_fkN6GqBpBn5Eg_oxp967rD_jKbMGSussb0?cqp=2.YN7dHnrK-mhyvtTBpyubvaFoUVdTM3W7BFy5YaeXzZ_Q2glMrBb_s4irqaJhHlfJPgeDGUqVXQ==" />
+      <Image url="https://30.img.avito.st/image/1/1.3uQrcra4cg0dxfAAGxmxnRLScAuV0_AbHd5wD5vbeged.WMf-c1nJn57t6fk3JKEpiQ0wvY66FHC1lU_8ZAh3VKQ?cqp=2.YN7dHnrK-mhyvtTBpyubvaFoUVdTM3W7BFy5YaeXzZ_Q2glMrBb_s4irqaJhHlfJPgeDGUqVXQ==" />
+    </Images>
+    <ContactMethod>По телефону и в сообщениях</ContactMethod>
+    <Category>Бытовая техника</Category>
+    <Price>18990</Price>
+    <AdType>Товар приобретен на продажу</AdType>
+    <GoodsType>Климатическое оборудование</GoodsType>
+    <ProductType>Кондиционеры и запчасти</ProductType>
+    <Condition>Новое</Condition>
+    <GoodsSubType>Кондиционеры</GoodsSubType>
+    <Vendor>Haier</Vendor>
+    <AirConditionerType>Сплит-система</AirConditionerType>
+    <AirConditionerSubType>Настенный</AirConditionerSubType>
+  </Ad>
+</Ads>
