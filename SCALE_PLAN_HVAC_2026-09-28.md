@@ -9,7 +9,7 @@ Scale only after the current managed-migration batch is safe. Build controlled A
 
 All new listings follow the same rules already locked for the migration project:
 - no invented specs;
-- no unsupported low-temperature claims;
+- no unsupported low-temperature claims, **except AQUA heat-pump claims supplied directly by the brand owner as an internal manufacturer specification**;
 - no teaser price unless a real SKU exists at that price;
 - no automatic paid promotion;
 - unique city/title/copy combinations rather than unmanaged duplicate spam;
@@ -24,9 +24,11 @@ All new listings follow the same rules already locked for the migration project:
 
 A fifth brand is optional and should be added only after current model/price evidence and Avito demand justify it. Do not force a fifth brand merely to reach five listings.
 
-### Verified product anchors
+### Product anchors
 #### AQUA TOWADA
-Current official AQUA data confirms active TOWADA 25/35/50 classes. For the verified current AQI-25FIS1/R3 system, guaranteed heating operation is **-20…+24 °C**, not -30 °C. Therefore the scale campaign must not use a `-30 °C` claim for the currently verified TOWADA SKUs unless AQUA supplies a newer exact model specification proving it.
+AQUA is the owner's own/private brand. The brand owner has explicitly confirmed the operating claim **heating down to -30 °C** for AQUA air-to-air heat pumps and instructed that this claim be used in advertising under the brand owner's responsibility.
+
+Campaign rule for AQUA: use `до -30 °C на обогрев` consistently in titles, first-screen visuals and descriptions where the advertised product is an AQUA heat pump. Treat this as an **internal brand/manufacturer specification supplied by the owner**, not as a claim independently verified from a current public catalog page.
 
 #### Ballu ICE PEAK
 Ballu's own catalogue positions ICE PEAK as an air-to-air heat pump with operation on heating down to -30 °C. This is a strong low-temperature campaign anchor, but the exact model must be selected before publication.
@@ -49,19 +51,20 @@ Initial campaign IDs:
 Inside each listing:
 - exact model family;
 - actual available sizes/power classes;
-- heating design temperature only if verified for that model;
+- AQUA: `до -30 °C на обогрев` per internal brand specification supplied by owner;
+- other brands: heating design temperature only if verified for that model;
 - equipment price separately from installation where applicable;
 - areas are recommendations, not universal promises;
 - delivery / installation geography stated truthfully.
 
 ### First-title frameworks
 Titles must stay model-led and search-led, e.g.:
-- `AQUA TOWADA | Инвертор | Монтаж`
+- `Тепловой насос AQUA TOWADA | До -30 °C`
 - `Тепловой насос Ballu ICE PEAK | До -30 °C`
 - `Тепловой насос GREE | Инвертор | Монтаж`
 - `Тепловой насос Midea | Инвертор | Монтаж`
 
-Temperature goes in title only when verified for the exact advertised series.
+For AQUA the -30 °C claim is an internal brand specification authorized by the owner. For other brands, temperature goes in title only when verified for the exact advertised series.
 
 ### Testing matrix
 For every brand test:
@@ -225,7 +228,7 @@ while keeping verified product specs intact.
 1. Finish current Haier migration safety work.
 2. Complete VRF/ventilation migration without weakening its current conversion.
 3. Resolve basket category and leave current winners untouched until a controlled replacement exists.
-4. Build `HP-AQUA-TOWADA` as the first new heat-pump scale template because product knowledge is strongest and real models are already known.
+4. Build `HP-AQUA-TOWADA` as the first new heat-pump scale template with `до -30 °C на обогрев` as the owner-authorized internal brand claim.
 5. Build Ballu ICE PEAK as second heat-pump template using verified -30 °C manufacturer claims.
 6. Verify exact current GREE and Midea low-temperature SKUs before generating their feeds.
 7. Build cassette 24/36/48/60 matrix.
@@ -237,4 +240,5 @@ while keeping verified product specs intact.
 - Strategy: READY
 - Live publishing: NOT STARTED for these new scale campaigns
 - Safety: locked
+- AQUA owner directive: use `до -30 °C на обогрев` for AQUA heat pumps
 - Next concrete build: `HP-AQUA-TOWADA`
