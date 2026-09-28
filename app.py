@@ -107,6 +107,31 @@ async def _avito_get(path: str, params: dict[str, Any] | None = None) -> Any:
         return {"text": response.text}
 
 
+@app.on_event("startup")
+async def startup_avito_probe() -> None:
+    """Verify Avito credentials on each deploy without logging any secrets."""
+    try:
+        profile = await _avito_get("/core/v1/accounts/self")
+        account_id = None
+        name = None
+        if isinstance(profile, dict):
+            account_id = profile.get("id") or profile.get("user_id") or profile.get("account_id")
+            name = profile.get("name") or profile.get("profile_name") or profile.get("company_name")
+        print(f"AVITO_AUTH_OK account_id={account_id!r} name={name!r}", flush=True)
+    except HTTPException as exc:
+        detail = exc.detail if isinstance(exc.detail, dict) else {}
+        stage = detail.get("stage")
+        upstream_status = detail.get("status")
+        path = detail.get("path")
+        print(
+            f"AVITO_AUTH_FAIL http_status={exc.status_code} stage={stage!r} "
+            f"upstream_status={upstream_status!r} path={path!r}",
+            flush=True,
+        )
+    except Exception as exc:
+        print(f"AVITO_AUTH_FAIL error_type={type(exc).__name__}", flush=True)
+
+
 @app.get("/health")
 async def health() -> dict[str, Any]:
     return {
