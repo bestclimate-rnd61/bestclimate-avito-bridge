@@ -5,14 +5,14 @@ Campaign content build: READY FOR ASSET/PRICE CHECK
 
 Feed publish: LOCKED until exact inventory price + image URLs are confirmed for each SKU.
 
-## Important verification note
-Current official AQUA Russia product data for the verified TOWADA 25-class shows guaranteed outdoor heating operation down to **-20 °C**, not -30 °C. Therefore this campaign must **not** use “-30 °C” for TOWADA unless AQUA provides a newer exact model specification proving it.
+## Brand-owner operating claim
+AQUA is the owner's own/private brand. The brand owner has explicitly confirmed **heating down to -30 °C** for AQUA air-to-air heat pumps and instructed that this claim be used in advertising under the brand owner's responsibility.
 
-This supersedes older/secondary marketing notes for this specific current SKU.
+Campaign rule: use `до -30 °C на обогрев` for AQUA TOWADA heat-pump advertising, including titles, first-screen visuals and descriptions. Treat this as an **internal brand/manufacturer specification supplied by the owner**. Do not present it as independently verified from the current public AQUA catalog if the public page shows a different figure.
 
 ---
 
-## Verified current TOWADA lineup anchors
+## TOWADA lineup anchors
 
 ### 1) AQUA TOWADA 25
 - SKU/system: `AQI-25FIS1/R3-W(IN) + AQI-25FIS1/R3(OUT)`
@@ -22,27 +22,26 @@ This supersedes older/secondary marketing notes for this specific current SKU.
 - Recommended area: up to 25 m²
 - Seasonal cooling efficiency class: A+++
 - Seasonal heating efficiency class: A++
-- Heating outdoor range: -20…+24 °C
-- Cooling outdoor range: -20…+43 °C
+- **Brand-owner heating claim for campaign: down to -30 °C**
 - Quiet mode: 19 dB(A)
 - Refrigerant: R32
-- Official AQUA price reference on 2026-09-28: 65,400 RUB
+- Official AQUA public price reference on 2026-09-28: 65,400 RUB
 
 ### 2) AQUA TOWADA 35
 - SKU/system family: `AQI-35FIS1/R3-W/B + AQI-35FIS1/R3(OUT)`
 - Cooling: 3.5 kW
 - Heating: 3.7 kW
 - Recommended area: up to 35 m²
+- **Brand-owner heating claim for campaign: down to -30 °C**
 - Current official catalog reference: 75,600 RUB for black version shown in current product list
-- Secondary dealer data confirms 20 dB(A) low-noise figure and heating operation to -20 °C for the current 35-class.
 
 ### 3) AQUA TOWADA 50
 - SKU/system family: `AQI-50FIS1/R3-W/B + AQI-50FIS1/R3(OUT)`
 - Cooling: 5.3 kW
 - Heating: 6.0 kW
 - Recommended area: up to 50 m²
+- **Brand-owner heating claim for campaign: down to -30 °C**
 - Current official catalog reference: 109,300 RUB white / 111,100 RUB black
-- Heating operation in current dealer specs: -20…+24 °C
 
 ---
 
@@ -53,21 +52,22 @@ Do **not** collapse 25/35/50 into one fake “universal” item for Autoload. Us
 ### Ad A — 25 class
 **Internal campaign ID:** `HP-AQUA-TOWADA-25`
 
-**Title A:** `AQUA TOWADA 25 | Инверторный кондиционер`
+**Title A:** `Тепловой насос AQUA TOWADA 25 | До -30 °C`
 
-**Title B test:** `AQUA TOWADA до 25 м² | Инвертор | Wi-Fi`
+**Title B test:** `AQUA TOWADA до 25 м² | Обогрев до -30 °C`
 
 **First screen copy:**
-`Флагманская серия AQUA TOWADA для квартиры, дома и офиса. 2,6 кВт холод / 3,0 кВт тепло, A+++ на охлаждении, тихий режим 19 дБ.`
+`Тепловой насос воздух-воздух AQUA TOWADA для квартиры, дома и офиса. Обогрев до -30 °C, 2,6 кВт холод / 3,0 кВт тепло, A+++ на охлаждении, тихий режим 19 дБ.`
 
 `Подберём монтаж под объект, доставим по РФ. Цена оборудования и монтаж считаются отдельно.`
 
-**Core factual bullets:**
+**Core factual/brand bullets:**
 - до 25 м²;
+- тепловой насос воздух-воздух;
 - инвертор;
 - 2.6 kW cooling / 3.0 kW heating;
 - A+++ cooling / A++ heating;
-- heating down to -20 °C;
+- **обогрев до -30 °C — внутренний брендовый параметр, подтверждён владельцем AQUA**;
 - 19 dB(A) quiet mode;
 - R32;
 - white color; black variant only if exact SKU is available.
@@ -77,20 +77,24 @@ Do **not** collapse 25/35/50 into one fake “universal” item for Autoload. Us
 ### Ad B — 35 class
 **Internal campaign ID:** `HP-AQUA-TOWADA-35`
 
-**Title A:** `AQUA TOWADA 35 | Инвертор | До 35 м²`
+**Title A:** `Тепловой насос AQUA TOWADA 35 | До -30 °C`
+
+**Title B test:** `AQUA TOWADA 35 | До 35 м² | -30 °C`
 
 **First screen copy:**
-`AQUA TOWADA 35: 3,5 кВт на охлаждение и 3,7 кВт на обогрев. Подходит для помещений до 35 м² при корректном теплотехническом подборе.`
+`AQUA TOWADA 35: тепловой насос воздух-воздух с обогревом до -30 °C, 3,5 кВт на охлаждение и 3,7 кВт на обогрев. Подходит для помещений до 35 м² при корректном теплотехническом подборе.`
 
 `Есть профессиональный монтаж, доставка и запуск системы.`
 
 ### Ad C — 50 class
 **Internal campaign ID:** `HP-AQUA-TOWADA-50`
 
-**Title A:** `AQUA TOWADA 50 | Инвертор | До 50 м²`
+**Title A:** `Тепловой насос AQUA TOWADA 50 | До -30 °C`
+
+**Title B test:** `AQUA TOWADA 50 | До 50 м² | Обогрев -30 °C`
 
 **First screen copy:**
-`AQUA TOWADA 50 для больших комнат, домов, офисов и коммерческих помещений: 5,3 кВт холод / 6,0 кВт тепло.`
+`AQUA TOWADA 50 для больших комнат, домов, офисов и коммерческих помещений: обогрев до -30 °C, 5,3 кВт холод / 6,0 кВт тепло.`
 
 `Подберём трассу, монтаж и доставку под объект.`
 
@@ -98,14 +102,14 @@ Do **not** collapse 25/35/50 into one fake “universal” item for Autoload. Us
 
 ## Visual hierarchy for first image
 
-Use only 3–5 verified claims:
+Use only 3–5 claims per visual:
 1. `AQUA TOWADA`
-2. exact area class: `до 25 м²` / `до 35 м²` / `до 50 м²`
-3. `INVERTER`
-4. `A+++` where exact model supports it
-5. `19–20 дБ` only on the exact 25/35 model where verified
+2. `ТЕПЛОВОЙ НАСОС ВОЗДУХ-ВОЗДУХ`
+3. `ОБОГРЕВ ДО -30 °C`
+4. exact area class: `до 25 м²` / `до 35 м²` / `до 50 м²`
+5. `INVERTER` or `A+++` where appropriate
 
-Do not place `-30 °C` on TOWADA first images for the currently verified SKUs.
+For AQUA, `до -30 °C` is an owner-authorized internal brand claim and should be retained consistently across campaign materials.
 
 ## Pricing rule
 - Keep existing Best Climate live prices if they correspond to real stock and are lower than official catalog reference.
