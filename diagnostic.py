@@ -76,6 +76,9 @@ def register_readonly_diagnostic(
             "autoload_uploads_count": None,
             "active_items": None,
             "active_sample": [],
+            "blocked_items": None,
+            "blocked_sample": [],
+            "blocked_details": [],
             "selected_details": [],
         }
 
@@ -112,8 +115,41 @@ def register_readonly_diagnostic(
         except HTTPException as exc:
             diag["items_http"] = exc.status_code
 
+        blocked_rows: list[Any] = []
+        try:
+            blocked = await avito_get(
+                "/core/v1/items",
+                params={"status": "blocked", "page": 1, "per_page": 100},
+            )
+            diag["blocked_items"] = count_items(blocked)
+            blocked_rows = _list_from_payload(blocked)
+            if diag["blocked_items"] is None:
+                diag["blocked_items"] = len(blocked_rows)
+            diag["blocked_sample"] = _item_sample(blocked, limit=100)
+        except HTTPException as exc:
+            diag["blocked_items_http"] = exc.status_code
+
         try:
             user_id = await account_id_getter()
+            blocked_ids: list[int] = []
+            for row in blocked_rows:
+                if not isinstance(row, dict):
+                    continue
+                raw_id = row.get("id") or row.get("item_id") or row.get("avito_id")
+                try:
+                    blocked_ids.append(int(raw_id))
+                except (TypeError, ValueError):
+                    continue
+
+            for item_id in blocked_ids[:100]:
+                try:
+                    detail = await avito_get(f"/core/v1/accounts/{user_id}/items/{item_id}/")
+                    diag["blocked_details"].append(_detail_summary(detail, item_id))
+                except HTTPException as exc:
+                    diag["blocked_details"].append(
+                        {"requested_id": item_id, "http": exc.status_code}
+                    )
+
             for item_id in TARGET_DETAIL_IDS:
                 try:
                     detail = await avito_get(f"/core/v1/accounts/{user_id}/items/{item_id}/")
