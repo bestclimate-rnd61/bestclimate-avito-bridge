@@ -40,6 +40,21 @@ def _item_sample(payload: Any, limit: int = 30) -> list[dict[str, Any]]:
     return result
 
 
+def _aqua_towada_matches(payload: Any) -> list[dict[str, Any]]:
+    matches: list[dict[str, Any]] = []
+    for row in _list_from_payload(payload):
+        if not isinstance(row, dict):
+            continue
+        title = str(row.get("title") or row.get("name") or "")
+        haystack = title.lower()
+        if "aqua" not in haystack and "towada" not in haystack and "тепловой насос" not in haystack:
+            continue
+        compact = _item_sample({"resources": [row]}, limit=1)
+        if compact:
+            matches.append(compact[0])
+    return matches
+
+
 def _detail_summary(payload: Any, requested_id: int) -> dict[str, Any]:
     result: dict[str, Any] = {"requested_id": requested_id}
     if not isinstance(payload, dict):
@@ -79,6 +94,8 @@ def register_readonly_diagnostic(
             "blocked_items": None,
             "blocked_sample": [],
             "blocked_details": [],
+            "aqua_history_matches": {},
+            "aqua_history_details": [],
             "selected_details": [],
         }
 
@@ -105,13 +122,16 @@ def register_readonly_diagnostic(
         except HTTPException as exc:
             diag["autoload_uploads_http"] = exc.status_code
 
+        active_rows: list[Any] = []
         try:
             items = await avito_get(
                 "/core/v1/items",
                 params={"status": "active", "page": 1, "per_page": 100},
             )
             diag["active_items"] = count_items(items)
+            active_rows = _list_from_payload(items)
             diag["active_sample"] = _item_sample(items)
+            diag["aqua_history_matches"]["active"] = _aqua_towada_matches(items)
         except HTTPException as exc:
             diag["items_http"] = exc.status_code
 
@@ -126,11 +146,26 @@ def register_readonly_diagnostic(
             if diag["blocked_items"] is None:
                 diag["blocked_items"] = len(blocked_rows)
             diag["blocked_sample"] = _item_sample(blocked, limit=100)
+            diag["aqua_history_matches"]["blocked"] = _aqua_towada_matches(blocked)
         except HTTPException as exc:
             diag["blocked_items_http"] = exc.status_code
 
+        history_rows: list[Any] = []
+        for status_name in ("old", "removed", "rejected"):
+            try:
+                payload = await avito_get(
+                    "/core/v1/items",
+                    params={"status": status_name, "page": 1, "per_page": 100},
+                )
+                rows = _list_from_payload(payload)
+                history_rows.extend(rows)
+                diag["aqua_history_matches"][status_name] = _aqua_towada_matches(payload)
+            except HTTPException as exc:
+                diag[f"{status_name}_items_http"] = exc.status_code
+
         try:
             user_id = await account_id_getter()
+
             blocked_ids: list[int] = []
             for row in blocked_rows:
                 if not isinstance(row, dict):
@@ -146,18 +181,35 @@ def register_readonly_diagnostic(
                     detail = await avito_get(f"/core/v1/accounts/{user_id}/items/{item_id}/")
                     diag["blocked_details"].append(_detail_summary(detail, item_id))
                 except HTTPException as exc:
-                    diag["blocked_details"].append(
-                        {"requested_id": item_id, "http": exc.status_code}
-                    )
+                    diag["blocked_details"].append({"requested_id": item_id, "http": exc.status_code})
+
+            seen_history: set[int] = set()
+            for row in active_rows + history_rows:
+                if not isinstance(row, dict):
+                    continue
+                title = str(row.get("title") or row.get("name") or "").lower()
+                if "aqua" not in title and "towada" not in title and "тепловой насос" not in title:
+                    continue
+                raw_id = row.get("id") or row.get("item_id") or row.get("avito_id")
+                try:
+                    item_id = int(raw_id)
+                except (TypeError, ValueError):
+                    continue
+                if item_id in seen_history:
+                    continue
+                seen_history.add(item_id)
+                try:
+                    detail = await avito_get(f"/core/v1/accounts/{user_id}/items/{item_id}/")
+                    diag["aqua_history_details"].append(_detail_summary(detail, item_id))
+                except HTTPException as exc:
+                    diag["aqua_history_details"].append({"requested_id": item_id, "http": exc.status_code})
 
             for item_id in TARGET_DETAIL_IDS:
                 try:
                     detail = await avito_get(f"/core/v1/accounts/{user_id}/items/{item_id}/")
                     diag["selected_details"].append(_detail_summary(detail, item_id))
                 except HTTPException as exc:
-                    diag["selected_details"].append(
-                        {"requested_id": item_id, "http": exc.status_code}
-                    )
+                    diag["selected_details"].append({"requested_id": item_id, "http": exc.status_code})
         except HTTPException as exc:
             diag["selected_details_account_http"] = exc.status_code
 
