@@ -4,6 +4,7 @@ from typing import Any, Awaitable, Callable
 from fastapi import FastAPI, HTTPException
 
 TARGET_DETAIL_IDS = [8479764928, 8461285020, 8324639588, 8305258576, 4228840511, 4228587935]
+BLOCKED_AQUA_ID = 8341283876
 
 
 def _list_from_payload(payload: Any) -> list[Any]:
@@ -78,6 +79,34 @@ def _detail_summary(payload: Any, requested_id: int) -> dict[str, Any]:
     return result
 
 
+def _safe_feed_profile(profile: Any) -> dict[str, Any]:
+    if not isinstance(profile, dict):
+        return {}
+    out: dict[str, Any] = {}
+    for key in ("autoload_enabled", "uploadMode", "allow_pay_over_limit"):
+        value = profile.get(key)
+        if isinstance(value, (str, int, float, bool)) or value is None:
+            out[key] = value
+    feeds = profile.get("feeds_data")
+    if isinstance(feeds, list):
+        safe_feeds: list[dict[str, Any]] = []
+        for feed in feeds:
+            if not isinstance(feed, dict):
+                continue
+            row: dict[str, Any] = {}
+            for key in ("feed_name", "feed_url", "name", "url"):
+                value = feed.get(key)
+                if isinstance(value, str):
+                    row[key] = value[:500]
+            if row:
+                safe_feeds.append(row)
+        out["feeds_data"] = safe_feeds
+    schedule = profile.get("schedule")
+    if isinstance(schedule, list):
+        out["schedule"] = schedule
+    return out
+
+
 def register_readonly_diagnostic(
     app: FastAPI,
     avito_get: Callable[..., Awaitable[Any]],
@@ -89,6 +118,8 @@ def register_readonly_diagnostic(
         diag: dict[str, Any] = {
             "autoload_profile_ok": False,
             "autoload_uploads_count": None,
+            "autoload_profile_safe": {},
+            "blocked_autoload_mapping": None,
             "active_items": None,
             "active_sample": [],
             "blocked_items": None,
@@ -102,6 +133,7 @@ def register_readonly_diagnostic(
         try:
             profile = await avito_get("/autoload/v2/profile")
             diag["autoload_profile_ok"] = isinstance(profile, dict)
+            diag["autoload_profile_safe"] = _safe_feed_profile(profile)
             if isinstance(profile, dict):
                 diag["autoload_profile_keys"] = sorted(str(k) for k in profile.keys())[:25]
                 for key in ("autoload_enabled", "uploadMode", "schedule", "allow_pay_over_limit"):
@@ -110,6 +142,14 @@ def register_readonly_diagnostic(
                         diag[f"autoload_{key}"] = value
         except HTTPException as exc:
             diag["autoload_profile_http"] = exc.status_code
+
+        try:
+            diag["blocked_autoload_mapping"] = await avito_get(
+                "/autoload/v2/items/ad_ids",
+                params={"query": str(BLOCKED_AQUA_ID)},
+            )
+        except HTTPException as exc:
+            diag["blocked_autoload_mapping_http"] = exc.status_code
 
         try:
             uploads = await avito_get(
