@@ -26,6 +26,7 @@ from feed_server import register_feed_server
 import lead_funnel_v2 as lead_funnel
 from recovery import register_recovery
 from recovery_retry import register_recovery_retry
+from stats_probe import register_stats_probe
 
 # Safe Telegram diagnostics: log only HTTP status / Telegram error description,
 # never the bot token or request URL containing it.
@@ -66,4 +67,5 @@ register_campaign_probe(app, _avito_get)
 register_feed_server(app)
 register_recovery(app, _avito_get, _get_token, AVITO_API_BASE)
 register_recovery_retry(app, _avito_get, _get_token, AVITO_API_BASE)
+register_stats_probe(app, _avito_get, _account_id, _get_token, AVITO_API_BASE)
 app.include_router(lead_router)
