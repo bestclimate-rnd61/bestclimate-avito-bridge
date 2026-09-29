@@ -154,7 +154,7 @@ button{{width:100%;border:0;border-radius:14px;padding:15px 18px;margin-top:18px
 </style>
 </head>
 <body><div class='wrap'>
-<section class='hero'><h1>Получите сертификат на 1 000 ₽ 🎫</h1><div class='sub'>Оставьте заявку — сертификат закрепится за вами, а менеджер свяжется по выбранной услуге.</div></section>
+<section class='hero'><h1>Получите сертификат на 3 000 ₽ 🎫</h1><div class='sub'>Оставьте заявку — сертификат закрепится за вами, а менеджер свяжется по выбранной услуге.</div></section>
 <div class='card'>
 <form id='leadForm'>
 <input class='hp' name='website' autocomplete='off' tabindex='-1'>
@@ -168,7 +168,7 @@ button{{width:100%;border:0;border-radius:14px;padding:15px 18px;margin-top:18px
 <label class='check'><input type='checkbox' name='marketing_consent'><span>Хочу получать акции и специальные предложения. Необязательно.</span></label>
 <button type='submit'>Получить сертификат</button><div class='note'>Без спама. Рекламное согласие отдельно и по желанию.</div><div id='err' class='err'></div>
 </form>
-<div id='success' class='hidden'><div class='certificate'><div>ПОДАРОЧНЫЙ СЕРТИФИКАТ</div><b>1 000 ₽</b><div>на покупку / монтаж климатического оборудования</div><div id='certCode' class='code'></div><div>{html.escape(BRAND_NAME)}</div></div><div class='links' id='contactLinks'></div><button type='button' onclick='location.reload()'>Новая заявка</button></div>
+<div id='success' class='hidden'><div class='certificate'><div>ПОДАРОЧНЫЙ СЕРТИФИКАТ</div><b>3 000 ₽</b><div>на покупку / монтаж климатического оборудования</div><div id='certCode' class='code'></div><div>{html.escape(BRAND_NAME)}</div></div><div class='links' id='contactLinks'></div><button type='button' onclick='location.reload()'>Новая заявка</button></div>
 </div></div>
 <script>
 const form=document.getElementById('leadForm'), err=document.getElementById('err'), success=document.getElementById('success');
