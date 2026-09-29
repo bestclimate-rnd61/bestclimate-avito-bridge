@@ -2,7 +2,7 @@ from app import AVITO_API_BASE, _account_id, _avito_get, _count_items, _get_toke
 from campaign_probe import register_campaign_probe
 from diagnostic import register_readonly_diagnostic
 from feed_server import register_feed_server
-from lead_funnel import router as lead_router
+from lead_funnel_v2 import router as lead_router
 from recovery import register_recovery
 from recovery_retry import register_recovery_retry
 
