@@ -1,17 +1,12 @@
-import re
+import base64
 from pathlib import Path
-from urllib.parse import urljoin
 
-import httpx
 from fastapi import FastAPI, HTTPException, Response
 
 
 HAIER_FEED_PATH = Path(__file__).with_name("avito_feed_batch_01_haier.xml")
 AQUA_VLADIMIR_RECOVERY_FEED_PATH = Path(__file__).with_name("avito_feed_aqua_vladimir_recovery.xml")
-AQUA_OFFICIAL_PRODUCT_URL = (
-    "https://aqua-russia.ru/catalog/house_split/towada/"
-    "aqua-aqi-25fis1-r3-w-in-aqua-aqi-25fis1-r3-out/"
-)
+AQUA_VLADIMIR_IMAGE_B64_PATH = Path(__file__).with_name("aqua_vladimir_main_sq400_q15.b64")
 
 
 def _xml_response(path: Path) -> Response:
@@ -24,40 +19,19 @@ def _xml_response(path: Path) -> Response:
     )
 
 
-async def _official_aqua_image() -> tuple[bytes, str]:
-    """Fetch the exact AQI-25FIS1/R3-W product image from AQUA's official site.
-
-    The upstream URL is fixed in code: callers cannot turn this endpoint into an
-    arbitrary proxy. We prefer OpenGraph/Twitter product imagery and fall back to
-    the first raster image URL present in the official product page.
-    """
-    headers = {"User-Agent": "BestClimate-Autoload/1.0"}
-    async with httpx.AsyncClient(timeout=20, follow_redirects=True, headers=headers) as client:
-        page = await client.get(AQUA_OFFICIAL_PRODUCT_URL)
-        page.raise_for_status()
-        html = page.text
-        patterns = [
-            r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)',
-            r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:image["\']',
-            r'<meta[^>]+name=["\']twitter:image["\'][^>]+content=["\']([^"\']+)',
-            r'<img[^>]+src=["\']([^"\']+\.(?:jpe?g|png|webp)(?:\?[^"\']*)?)["\']',
-        ]
-        image_url = None
-        for pattern in patterns:
-            match = re.search(pattern, html, flags=re.IGNORECASE)
-            if match:
-                image_url = urljoin(AQUA_OFFICIAL_PRODUCT_URL, match.group(1))
-                break
-        if not image_url:
-            raise HTTPException(status_code=502, detail="Official AQUA product image not found")
-        image = await client.get(image_url)
-        image.raise_for_status()
-        content_type = image.headers.get("content-type", "image/jpeg").split(";", 1)[0].strip().lower()
-        if content_type not in {"image/jpeg", "image/png", "image/webp"}:
-            raise HTTPException(status_code=502, detail="Official AQUA image has unsupported content type")
-        if len(image.content) < 1024:
-            raise HTTPException(status_code=502, detail="Official AQUA image payload is unexpectedly small")
-        return image.content, content_type
+def _local_aqua_image() -> bytes:
+    if not AQUA_VLADIMIR_IMAGE_B64_PATH.exists():
+        raise HTTPException(status_code=404, detail="AQUA recovery image payload is missing")
+    try:
+        content = base64.b64decode(
+            AQUA_VLADIMIR_IMAGE_B64_PATH.read_text(encoding="ascii").strip(),
+            validate=True,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail="AQUA recovery image payload is invalid") from exc
+    if len(content) < 1024 or not content.startswith(b"\xff\xd8\xff"):
+        raise HTTPException(status_code=500, detail="AQUA recovery image is not a valid JPEG")
+    return content
 
 
 def register_feed_server(app: FastAPI) -> None:
@@ -71,9 +45,8 @@ def register_feed_server(app: FastAPI) -> None:
 
     @app.get("/media/aqua-towada-aqi-25fis1-r3-w.jpg", include_in_schema=False)
     async def aqua_towada_product_image() -> Response:
-        content, content_type = await _official_aqua_image()
         return Response(
-            content=content,
-            media_type=content_type,
+            content=_local_aqua_image(),
+            media_type="image/jpeg",
             headers={"Cache-Control": "public, max-age=3600"},
         )
