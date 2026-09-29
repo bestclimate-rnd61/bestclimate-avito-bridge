@@ -25,5 +25,8 @@
     <Vendor>AQUA</Vendor>
     <AirConditionerType>Сплит-система</AirConditionerType>
     <AirConditionerSubType>Настенный</AirConditionerSubType>
+    <Images>
+      <Image url="https://bestclimate-avito-bridge-live-production.up.railway.app/media/aqua-towada-aqi-25fis1-r3-w.jpg" />
+    </Images>
   </Ad>
 </Ads>
