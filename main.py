@@ -1,3 +1,11 @@
+import os
+import re
+
+# BotFather tokens can accidentally be pasted with hidden line breaks on mobile.
+# Remove all whitespace before the Telegram integration reads the token.
+if "LEAD_TELEGRAM_BOT_TOKEN" in os.environ:
+    os.environ["LEAD_TELEGRAM_BOT_TOKEN"] = re.sub(r"\s+", "", os.environ["LEAD_TELEGRAM_BOT_TOKEN"])
+
 from app import AVITO_API_BASE, _account_id, _avito_get, _count_items, _get_token, app
 from campaign_probe import register_campaign_probe
 from diagnostic import register_readonly_diagnostic
