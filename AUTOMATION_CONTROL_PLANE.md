@@ -13,6 +13,10 @@ Prefer OAuth/API tokens and connected tools over usernames/passwords. Never stor
 
 ## Instagram AI profile
 - Instagram: sitkoalex.ai.business
+- Professional account; category: Автор цифрового контента
+- Public profile; BIO configured
+- User-approved portrait avatar with watch/lavalier is installed and visually confirmed
+- As of 2026-09-30 late evening: 0 posts / 0 followers / 0 following
 - Buffer account: separate from alexandr.sitko stack
 - Buffer channel: sitkoalex.ai.business
 - Buffer timezone: Moscow
@@ -27,6 +31,8 @@ Prefer OAuth/API tokens and connected tools over usernames/passwords. Never stor
 - Worker: `instagram_buffer_bridge.py`
 - Only items with `approved=true` are eligible for queueing/publishing.
 - No unapproved public content, ad spend, or paid promotion.
+- Staged draft Reels (all approved=false, media_url empty): `ai-reel-001-start`, `ai-reel-002-team`, `ai-reel-003-audit`.
+- Do not publish these drafts until video media URLs exist and the user explicitly approves public publication.
 
 ## Railway
 Project: bestclimate-avito-bridge
@@ -47,13 +53,14 @@ Required variables:
 - BUFFER_MAX_ADD_PER_RUN=10
 - BUFFER_API_KEY=<SECRET IN RAILWAY ONLY>
 
-Current state as of 2026-09-30:
+Current verified state as of 2026-10-01 00:06 Moscow:
 - `BUFFER_API_KEY` is present in Railway Variables.
 - Railway config deploy completed successfully after the secret was saved.
-- Service is restored to hourly cron `5 * * * *`.
-- Temporary pre-deploy test hook was removed; `preDeployCommand=[]`.
-- Public content queue remains empty, so zero posts can be published during verification.
-- Next checkpoint: verify the first scheduled worker run reaches Buffer API and discovers `sitkoalex.ai.business`; if it fails, inspect Railway cron logs and fix without user interaction where possible.
+- Service runs hourly cron `5 * * * *`.
+- Temporary pre-deploy test hook removed; `preDeployCommand=[]`.
+- Scheduled worker run started successfully and logged `BUFFER_BRIDGE_DONE` for channel `sitkoalex.ai.business` with `added=0`, `skipped=0`, `errors=0`.
+- Three draft Reels exist but remain `approved=false`, so no item was queued or published.
+- Continue hourly log verification and keep public publication gated on explicit approval plus valid media_url.
 
 ### Live Avito service
 Service: bestclimate-avito-bridge-live
@@ -76,7 +83,8 @@ Ask the user only when one of these is genuinely required:
 3. CAPTCHA or identity verification;
 4. OAuth approval that cannot be completed by available connector;
 5. secure secret paste into provider secret store;
-6. explicit approval for new public content, ad spend, or irreversible settings.
+6. physical upload of a local media file where no API/cloud route is available;
+7. explicit approval for new public content, ad spend, or irreversible settings.
 
 When a manual action is needed, send one concise Gmail alert and continue all other cloud/preparation work in parallel. Do not repeat the same alert until the blocker state changes.
 
@@ -95,4 +103,4 @@ When a manual action is needed, send one concise Gmail alert and continue all ot
 Do not use TinyFish for this project.
 
 ## Next critical checkpoint
-Verify the first scheduled Buffer worker run after secret installation: confirm Buffer API usage increments, channel discovery resolves `sitkoalex.ai.business`, queue stays empty, and no publication occurs. Then continue hourly monitoring automatically.
+Continue scheduled Buffer worker verification. In parallel, expand the staged 12-Reel launch system and three pinned-post concepts without approving or publishing them. The first three drafts establish the pillars: founder/real implementation, AI team/system, and AI audit/lead magnet.
