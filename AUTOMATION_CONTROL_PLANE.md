@@ -47,6 +47,14 @@ Required variables:
 - BUFFER_MAX_ADD_PER_RUN=10
 - BUFFER_API_KEY=<SECRET IN RAILWAY ONLY>
 
+Current state as of 2026-09-30:
+- `BUFFER_API_KEY` is present in Railway Variables.
+- Railway config deploy completed successfully after the secret was saved.
+- Service is restored to hourly cron `5 * * * *`.
+- Temporary pre-deploy test hook was removed; `preDeployCommand=[]`.
+- Public content queue remains empty, so zero posts can be published during verification.
+- Next checkpoint: verify the first scheduled worker run reaches Buffer API and discovers `sitkoalex.ai.business`; if it fails, inspect Railway cron logs and fix without user interaction where possible.
+
 ### Live Avito service
 Service: bestclimate-avito-bridge-live
 Service ID: 7fd7de90-333f-440d-97c1-8c97394918cf
@@ -87,4 +95,4 @@ When a manual action is needed, send one concise Gmail alert and continue all ot
 Do not use TinyFish for this project.
 
 ## Next critical checkpoint
-After BUFFER_API_KEY is present in Railway service 345003ca-8c70-47b0-8f9b-bf4c712d3610: redeploy, verify Buffer authorization/channel discovery, verify empty queue produces zero publications, then keep the hourly worker active.
+Verify the first scheduled Buffer worker run after secret installation: confirm Buffer API usage increments, channel discovery resolves `sitkoalex.ai.business`, queue stays empty, and no publication occurs. Then continue hourly monitoring automatically.
