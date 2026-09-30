@@ -42,22 +42,36 @@ def _field_hits(obj: Any, wanted: str, out: list[dict[str, Any]]) -> None:
     if isinstance(obj, dict):
         identifiers = [obj.get(k) for k in ("tag", "name", "field", "code", "id")]
         if any(str(v).lower() == wanted.lower() for v in identifiers if v is not None):
-            # Category docs contain no secrets; still keep only useful structure.
-            safe = {}
-            for key in (
-                "tag", "name", "field", "code", "id", "title", "description",
-                "required", "type", "values", "variants", "options", "dependencies",
-                "value", "valuesCatalog", "catalog", "warning",
-            ):
-                if key in obj:
-                    safe[key] = obj[key]
-            out.append(safe)
+            # Official category docs contain no account secrets. Keep the complete
+            # matching field object so nested allowed values/dependencies are visible.
+            out.append(obj)
         for value in obj.values():
             if isinstance(value, (dict, list)):
                 _field_hits(value, wanted, out)
     elif isinstance(obj, list):
         for value in obj:
             _field_hits(value, wanted, out)
+
+
+def _schema_preview(obj: Any) -> Any:
+    """Compact structural preview of the official fields payload."""
+    if isinstance(obj, dict):
+        preview: dict[str, Any] = {"_keys": list(obj.keys())[:80]}
+        for key, value in obj.items():
+            if isinstance(value, list):
+                preview[key] = {
+                    "type": "list",
+                    "len": len(value),
+                    "first": value[:2],
+                }
+            elif isinstance(value, dict):
+                preview[key] = {"type": "dict", "keys": list(value.keys())[:80]}
+            elif isinstance(value, (str, int, float, bool)) or value is None:
+                preview[key] = value
+        return preview
+    if isinstance(obj, list):
+        return {"type": "list", "len": len(obj), "first": obj[:2]}
+    return {"type": type(obj).__name__, "value": obj}
 
 
 def register_autoload_category_probe(
@@ -73,7 +87,6 @@ def register_autoload_category_probe(
 
         candidates: list[dict[str, Any]] = []
         _walk(tree, [], candidates)
-        # Deduplicate and prioritize the household/climate path.
         unique: dict[tuple[str, str | None], dict[str, Any]] = {}
         for item in candidates:
             unique[(item["path"], item["slug"])] = item
@@ -94,7 +107,6 @@ def register_autoload_category_probe(
             path_low = item.get("path", "").lower()
             if not slug or slug in tried or "обогревател" not in path_low:
                 continue
-            # Prefer the exact household -> climate equipment -> heaters branch.
             if "бытовая техника" not in path_low and "климатическ" not in path_low:
                 continue
             tried.add(slug)
@@ -103,30 +115,32 @@ def register_autoload_category_probe(
             except HTTPException as exc:
                 result["heater_fields"].append({"slug": slug, "path": item["path"], "http": exc.status_code})
                 continue
+
             goods_subtype: list[dict[str, Any]] = []
             _field_hits(fields, "GoodsSubType", goods_subtype)
-            # Collect names of required fields too, to avoid one-error-at-a-time retries.
-            required_names: list[str] = []
-            def scan_required(value: Any) -> None:
+
+            # Also capture every field object that exposes a tag/name so we can see
+            # all mandatory/dependent fields for this exact branch in one pass.
+            tagged_fields: list[dict[str, Any]] = []
+            def scan_tagged(value: Any) -> None:
                 if isinstance(value, dict):
-                    if value.get("required") is True:
-                        for k in ("tag", "name", "field", "code"):
-                            v = value.get(k)
-                            if isinstance(v, str) and v not in required_names:
-                                required_names.append(v)
-                                break
+                    tag = value.get("tag") or value.get("name") or value.get("field")
+                    if isinstance(tag, str):
+                        tagged_fields.append(value)
                     for child in value.values():
                         if isinstance(child, (dict, list)):
-                            scan_required(child)
+                            scan_tagged(child)
                 elif isinstance(value, list):
                     for child in value:
-                        scan_required(child)
-            scan_required(fields)
+                        scan_tagged(child)
+            scan_tagged(fields)
+
             result["heater_fields"].append({
                 "slug": slug,
                 "path": item["path"],
+                "payload_preview": _schema_preview(fields),
                 "goods_subtype": goods_subtype,
-                "required_fields": required_names[:80],
+                "tagged_fields": tagged_fields[:120],
             })
             if goods_subtype:
                 break
@@ -142,7 +156,8 @@ def register_autoload_category_probe(
             await asyncio.sleep(18)
             try:
                 data = await collect()
-                print("AVITO_HEATER_FIELDS " + json.dumps(data, ensure_ascii=False, sort_keys=True)[:15000], flush=True)
+                raw = json.dumps(data, ensure_ascii=False, sort_keys=True)
+                print("AVITO_HEATER_FIELDS_FULL " + raw[:50000], flush=True)
             except Exception as exc:
-                print("AVITO_HEATER_FIELDS " + json.dumps({"error": type(exc).__name__}), flush=True)
+                print("AVITO_HEATER_FIELDS_FULL " + json.dumps({"error": type(exc).__name__}), flush=True)
         asyncio.create_task(run())
