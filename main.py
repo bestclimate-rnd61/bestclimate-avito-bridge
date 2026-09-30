@@ -20,6 +20,7 @@ if "LEAD_TELEGRAM_BOT_TOKEN" in os.environ:
     )
 
 from app import AVITO_API_BASE, _account_id, _avito_get, _count_items, _get_token, app
+from autoload_target_probe import register_autoload_target_probe
 from campaign_probe import register_campaign_probe
 from diagnostic import register_readonly_diagnostic
 from feed_server import register_feed_server
@@ -70,4 +71,5 @@ register_recovery(app, _avito_get, _get_token, AVITO_API_BASE)
 register_recovery_retry(app, _avito_get, _get_token, AVITO_API_BASE)
 register_stats_probe(app, _avito_get, _account_id, _get_token, AVITO_API_BASE)
 register_flagship_optimizer(app, _avito_get, _get_token, AVITO_API_BASE)
+register_autoload_target_probe(app, _avito_get)
 app.include_router(lead_router)
