@@ -87,7 +87,19 @@ def existing_texts(org_id: str, channel_id: str) -> set[str]:
         }
     """, {"orgId": org_id, "channelId": channel_id})
     edges = (((data.get("posts") or {}).get("edges")) or [])
-    return {str((edge.get("node") or {}).get("text") or "").strip() for edge in edges}
+    texts = set()
+    for edge in edges:
+        node = edge.get("node") or {}
+        text = str(node.get("text") or "").strip()
+        if text:
+            texts.add(text)
+            print("BUFFER_BRIDGE_EXISTING " + json.dumps({
+                "post_id": node.get("id"),
+                "status": node.get("status"),
+                "due_at": node.get("dueAt"),
+                "text_preview": text[:120]
+            }, ensure_ascii=False), flush=True)
+    return texts
 
 
 def create_post(channel_id: str, item: dict) -> dict:
