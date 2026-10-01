@@ -69,7 +69,7 @@ Current verified state:
 - Service runs hourly cron `5 * * * *`.
 - Temporary pre-deploy test hook removed; `preDeployCommand=[]`.
 - Scheduled worker has logged `BUFFER_BRIDGE_DONE` for channel `sitkoalex.ai.business` with no errors and no unplanned additions while drafts are unapproved.
-- 2026-10-01 04:08 MSK check: `BUFFER_BRIDGE_DONE {channel: sitkoalex.ai.business, added: 0, skipped: 0, errors: 0}`.
+- 2026-10-01 05:07 MSK check: `BUFFER_BRIDGE_DONE {channel: sitkoalex.ai.business, added: 0, skipped: 0, errors: 0}`.
 - Continue hourly log verification and keep public publication gated on explicit approval plus valid media_url.
 
 ### Live Avito service
@@ -84,6 +84,9 @@ Do not mix Instagram runtime or secrets into this service unless explicitly rede
 
 ## Lead funnel
 Instagram -> free AI business audit -> Telegram/SaleBot capture -> qualification -> manager/offer handoff.
+- Funnel specification is now stored in `ai_audit_funnel_spec.md`.
+- Seven-question intake, qualification score, segments, audit output, state machine, statuses, privacy gates and implementation order are defined.
+- Public `РАЗБОР` CTA remains disabled until the intake route is implemented and tested end-to-end with a synthetic lead.
 Existing Best Climate certificate funnel can remain separate unless deliberately used for HVAC traffic; do not confuse the AI-business profile proposition with HVAC lead incentives.
 Keep irreversible/high-risk changes gated: payment data, account ownership, 2FA, secrets, identity documents.
 
@@ -114,4 +117,4 @@ When a manual action is needed, send one concise Gmail alert and continue all ot
 Do not use TinyFish for this project.
 
 ## Next critical checkpoint
-Build the free 7-question AI audit intake specification and Telegram/SaleBot funnel logic before enabling a public lead CTA. Continue scheduled Buffer worker verification. Keep all 12 Reels unapproved until media exists and the user explicitly approves publication.
+Implement the 7-question intake from `ai_audit_funnel_spec.md` in the available Telegram/SaleBot path, then test one synthetic lead end-to-end before enabling the public `РАЗБОР` CTA. Continue scheduled Buffer worker verification. Keep all 12 Reels unapproved until media exists and the user explicitly approves publication.
