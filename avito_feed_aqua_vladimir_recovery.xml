@@ -1,35 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Ads formatVersion="3" target="Avito.ru">
   <Ad>
-    <Id>BC-8341283876-RECOVERY</Id>
-    <AvitoId>8341283876</AvitoId>
-    <ListingFee>Package</ListingFee>
-    <AdStatus>Free</AdStatus>
-    <Address>Владимирская обл., Владимир</Address>
-    <Title>Тепловой насос Aqua Towada до -30C A+++ Wi-Fi</Title>
-    <Description><![CDATA[AQUA TOWADA Premium Inverter — тепловой насос воздух-воздух для отопления и охлаждения дома, квартиры, офиса или коммерческого помещения.
-
-Обогрев до −30 °C. Инверторная технология, класс энергоэффективности A+++, Wi‑Fi, тихая работа от 19 дБ(А). Для серии TOWADA предусмотрены функции 3D Airflow, Smart Eye, Nano‑Aqua, УФ‑лампа, SelfClean и SteriClean 56 °C. Гарантия на оборудование — 5 лет.
-
-Оборудование новое. Поможем подобрать мощность под площадь помещения. Доставка по Владимиру — бесплатно для данного предложения. Возможна отправка по России транспортной компанией.
-
-Профессиональный подбор, продажа, монтаж и сервис от «Бест Климат Ростов». Напишите площадь помещения и нужна ли установка — рассчитаем подходящий вариант.]]></Description>
-    <ContactMethod>По телефону и в сообщениях</ContactMethod>
-    <Category>Бытовая техника</Category>
-    <Price>65400</Price>
-    <AdType>Товар приобретен на продажу</AdType>
-    <GoodsType>Климатическое оборудование</GoodsType>
-    <ProductType>Кондиционеры и запчасти</ProductType>
-    <Condition>Новое</Condition>
-    <GoodsSubType>Кондиционеры</GoodsSubType>
-    <Vendor>AQUA</Vendor>
-    <AirConditionerType>Сплит-система</AirConditionerType>
-    <AirConditionerSubType>Настенный</AirConditionerSubType>
-    <Images>
-      <Image url="https://bestclimate-avito-bridge-live-production.up.railway.app/media/aqua-towada-aqi-25fis1-r3-w.jpg" />
-    </Images>
-  </Ad>
-  <Ad>
     <Id>BC-7556388793-OPTIMIZED</Id>
     <AvitoId>7556388793</AvitoId>
     <ListingFee>Package</ListingFee>
