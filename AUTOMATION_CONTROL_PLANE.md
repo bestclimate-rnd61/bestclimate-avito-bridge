@@ -40,6 +40,8 @@ Three future pinned Reels are selected by role, but remain unpublished:
 2. `ai-reel-003-audit` — PIN 2 / LEAD MAGNET: 7-answer AI business audit, CTA toward the free diagnostic funnel. Primary lead-capture asset.
 3. `ai-reel-011-case` — PIN 3 / PROOF: case-study framework problem -> baseline -> automation -> cost -> result -> failure/lesson. Primary trust/proof asset; publish only when the first real case has verifiable before/after data.
 
+Production-ready shot lists, cover specs, edit rules and safety gates for all three pins are stored in `instagram_launch_production_specs.md`. PIN 2 must use a save/follow pre-launch CTA until the Telegram/SaleBot audit intake actually exists; PIN 3 remains evidence-gated until real before/after data is available.
+
 Supporting launch sequence: 002 AI team/system, 004 lead handling 24/7, 005 content factory, 006 AI does not fix chaos, 007 cloud processes 24/7, 008 three implementation mistakes, 009 AI ROI metrics, 010 no-code architecture, 012 30-day roadmap. Keep claims factual and demonstrable.
 
 ## Railway
@@ -67,6 +69,7 @@ Current verified state:
 - Service runs hourly cron `5 * * * *`.
 - Temporary pre-deploy test hook removed; `preDeployCommand=[]`.
 - Scheduled worker has logged `BUFFER_BRIDGE_DONE` for channel `sitkoalex.ai.business` with no errors and no unplanned additions while drafts are unapproved.
+- 2026-10-01 04:08 MSK check: `BUFFER_BRIDGE_DONE {channel: sitkoalex.ai.business, added: 0, skipped: 0, errors: 0}`.
 - Continue hourly log verification and keep public publication gated on explicit approval plus valid media_url.
 
 ### Live Avito service
@@ -111,4 +114,4 @@ When a manual action is needed, send one concise Gmail alert and continue all ot
 Do not use TinyFish for this project.
 
 ## Next critical checkpoint
-Convert the three pinned concepts into production-ready shot lists and cover specifications while keeping them unapproved. Continue scheduled Buffer worker verification. Build the free AI audit as the first funnel asset before enabling a public CTA that promises it.
+Build the free 7-question AI audit intake specification and Telegram/SaleBot funnel logic before enabling a public lead CTA. Continue scheduled Buffer worker verification. Keep all 12 Reels unapproved until media exists and the user explicitly approves publication.
