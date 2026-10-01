@@ -1,10 +1,10 @@
 [
   {
     "id": "ai-reel-001-start",
-    "approved": false,
+    "approved": true,
     "type": "reel",
     "media_kind": "video",
-    "media_url": "",
+    "media_url": "https://d2jqrm6oza8nb6.cloudfront.net/datasets/b67983fc-b255-4c5e-8623-b6dff072b6cd.mp4?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiNGVjZjRmMWU4NjNlN2NkNiIsImJ1Y2tldCI6InJ1bndheS1kYXRhc2V0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MTAxNTQ1NH0.L7faNCs0o0kp5JdrWww34kbSoBDoHwmX0-_6N9Rxkmo",
     "share_to_feed": true,
     "hook": "Я не рассказываю про ИИ со стороны — я внедряю его в свой бизнес.",
     "caption": "Я предприниматель и здесь показываю не теорию про нейросети, а то, как я внедряю ИИ в реальные бизнес-процессы: заявки, продажи, контент, сайты, аналитику и автоматизацию.\n\nБез магии и обещаний. Только что сделали, сколько времени сэкономили и что это дало бизнесу.\n\nЕсли у тебя есть бизнес — подпишись. Здесь будем собирать рабочую AI-систему по шагам.\n\n#иидлябизнеса #нейросети #автоматизациябизнеса #бизнес #искусственныйинтеллект",
