@@ -1,0 +1,90 @@
+[
+  {
+    "id": "highlight-v3-start",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "mode": "shareNow",
+    "caption": "СТАРТ • кто я, что внедряю и как пользоваться профилем",
+    "media_url": "https://at.adobe.com/C6jX7zuB8pU0TyjZ",
+    "share_to_feed": false
+  },
+  {
+    "id": "highlight-v3-ai-business",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "mode": "shareNow",
+    "caption": "AI-БИЗНЕС • заявки, контент, аналитика и продажи с ИИ",
+    "media_url": "https://at.adobe.com/l8nBiE6NM96Px4jo",
+    "share_to_feed": false
+  },
+  {
+    "id": "highlight-v3-automation",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "mode": "shareNow",
+    "caption": "АВТОМАТИЗАЦИЯ • процессы, которые можно передать ИИ",
+    "media_url": "https://at.adobe.com/PmtP2UxhXA7PVsOz",
+    "share_to_feed": false
+  },
+  {
+    "id": "highlight-v3-cases",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "mode": "shareNow",
+    "caption": "КЕЙСЫ • реальные внедрения, решения, ошибки и результат",
+    "media_url": "https://at.adobe.com/ofoS9XeTnTjyCulN",
+    "share_to_feed": false
+  },
+  {
+    "id": "highlight-v3-tools",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "mode": "shareNow",
+    "caption": "ИНСТРУМЕНТЫ • сервисы, связки и AI-инструменты",
+    "media_url": "https://at.adobe.com/42MPm0FWtjmYlLE7",
+    "share_to_feed": false
+  },
+  {
+    "id": "highlight-v3-audit",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "mode": "shareNow",
+    "caption": "РАЗБОР • что автоматизировать в твоём бизнесе и с чего начать",
+    "media_url": "https://at.adobe.com/jFSVcfMDC3qewxd7",
+    "share_to_feed": false
+  },
+  {
+    "id": "highlight-v3-about",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "mode": "shareNow",
+    "caption": "ОБО МНЕ • Александр Ситько, предприниматель, внедряю ИИ в свои проекты",
+    "media_url": "https://at.adobe.com/dlb5gb8XzfM4WF6M",
+    "share_to_feed": false
+  },
+  {
+    "id": "highlight-v3-faq",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "mode": "shareNow",
+    "caption": "ВОПРОСЫ • ИИ, внедрение, стоимость, сроки и запуск",
+    "media_url": "https://at.adobe.com/Rg2aI1cwwVQUYgke",
+    "share_to_feed": false
+  }
+]
