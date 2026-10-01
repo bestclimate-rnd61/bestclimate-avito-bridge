@@ -36,9 +36,10 @@ def register_cpxpromo_lower(app: FastAPI, avito_get, get_token, api_base: str):
                         allowed.append(row["valuePenny"])
                 allowed = sorted(set(allowed))
                 min_bid = manual.get("minBidPenny")
-                new_bid = allowed[0] if allowed else min_bid
+                whole_ruble_allowed = [value for value in allowed if value % 100 == 0]
+                new_bid = whole_ruble_allowed[0] if whole_ruble_allowed else None
                 if action_type != 5 or not isinstance(new_bid, int):
-                    results[str(item_id)] = {"skipped": "unsupported_action_or_bid", "actionTypeID": action_type, "minBidPenny": min_bid}
+                    results[str(item_id)] = {"skipped": "unsupported_action_or_bid", "actionTypeID": action_type, "minBidPenny": min_bid, "allowed": allowed[:12]}
                     continue
                 token = await get_token()
                 async with httpx.AsyncClient(timeout=30) as client:
@@ -47,9 +48,7 @@ def register_cpxpromo_lower(app: FastAPI, avito_get, get_token, api_base: str):
                         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
                         json={"itemID": item_id, "bidPenny": new_bid, "actionTypeID": action_type},
                     )
-                safe_body = ""
-                if response.status_code >= 400:
-                    safe_body = response.text[:400]
+                safe_body = response.text[:400] if response.status_code >= 400 else ""
                 results[str(item_id)] = {
                     "http": response.status_code,
                     "actionTypeID": action_type,
