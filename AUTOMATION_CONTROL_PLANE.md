@@ -25,22 +25,41 @@ Prefer OAuth/API tokens and connected tools over usernames/passwords. Never stor
 - Buffer key permissions: user explicitly approved all 9 selected permissions
 - Never expose the key in chat, GitHub, logs, or screenshots.
 
+## Full profile packaging
+Packaging is a permanent workstream, not only Reels. Detailed plan: `instagram_profile_packaging_plan.md`.
+
+Profile checklist before launch:
+- avatar, searchable Name field, username, BIO, category, link/CTA;
+- public/recommendation eligibility and Account Status;
+- Professional Dashboard / creator-business tools;
+- Highlights as navigation/funnel, never empty decoration;
+- 3 pinned conversion assets;
+- coherent feed cover system and Story system.
+
+Planned Highlights: `СТАРТ`, `КЕЙСЫ`, `AI-БИЗНЕС`, `ИНСТРУМЕНТЫ`, `РАЗБОР`; later `ОБО МНЕ`, `FAQ`. Public Stories/Highlights remain approval-gated.
+
+Feed cover families: FACE + CLAIM, SYSTEM, CASE. Keep 3–5 word mobile-readable titles, high contrast, one focal point, consistent typography and no visual clutter.
+
+Recognizable content series: `AI за 60 секунд`, `Разбор бизнеса`, `Что автоматизировать первым`, `AI-ошибка недели`, `Кейс до/после`, `1 инструмент — 1 задача`.
+
+Reels operating rules: original/meaningfully transformed content, no foreign-platform watermarks, 1080x1920, first-frame hook within 1–2 seconds, captions/on-screen text, clear cover, and CTA toward save/send/follow when appropriate. Measure retention/watch time, sends, saves, profile visits and follows. Trial Reels are a native/manual experiment only when available in the Instagram account; do not make Buffer automation depend on them.
+
 ## Publishing layer
 - Buffer Free for sitkoalex.ai.business
 - Content is staged in `instagram_content_queue.json`
 - Worker: `instagram_buffer_bridge.py`
 - Only items with `approved=true` are eligible for queueing/publishing.
-- No unapproved public content, ad spend, or paid promotion.
-- Launch queue now contains 12 Reel drafts `ai-reel-001` through `ai-reel-012`; all remain `approved=false` with empty `media_url`.
+- No unapproved public content, Stories, ad spend, or paid promotion.
+- Launch queue contains 12 Reel drafts; all remain `approved=false` with empty `media_url`.
 - Do not publish any draft until a valid video media URL exists and the user explicitly approves public publication.
 
 ### Launch content architecture
 Three future pinned Reels are selected by role, but remain unpublished:
-1. `ai-reel-001-start` — PIN 1 / POSITIONING: who Alexander is, why this profile exists, real AI implementation in his own businesses. Primary profile-conversion asset.
-2. `ai-reel-003-audit` — PIN 2 / LEAD MAGNET: 7-answer AI business audit, CTA toward the free diagnostic funnel. Primary lead-capture asset.
-3. `ai-reel-011-case` — PIN 3 / PROOF: case-study framework problem -> baseline -> automation -> cost -> result -> failure/lesson. Primary trust/proof asset; publish only when the first real case has verifiable before/after data.
+1. `ai-reel-001-start` — PIN 1 / POSITIONING.
+2. `ai-reel-003-audit` — PIN 2 / LEAD MAGNET.
+3. `ai-reel-011-case` — PIN 3 / PROOF; evidence-gated.
 
-Production-ready shot lists, cover specs, edit rules and safety gates for all three pins are stored in `instagram_launch_production_specs.md`. PIN 2 must use a save/follow pre-launch CTA until the Telegram/SaleBot audit intake actually exists; PIN 3 remains evidence-gated until real before/after data is available.
+Production specs: `instagram_launch_production_specs.md`. PIN 2 must use a save/follow pre-launch CTA until the Telegram/SaleBot audit intake exists; PIN 3 requires real before/after data.
 
 Supporting launch sequence: 002 AI team/system, 004 lead handling 24/7, 005 content factory, 006 AI does not fix chaos, 007 cloud processes 24/7, 008 three implementation mistakes, 009 AI ROI metrics, 010 no-code architecture, 012 30-day roadmap. Keep claims factual and demonstrable.
 
@@ -68,8 +87,7 @@ Current verified state:
 - Railway config deploy completed successfully after the secret was saved.
 - Service runs hourly cron `5 * * * *`.
 - Temporary pre-deploy test hook removed; `preDeployCommand=[]`.
-- Scheduled worker has logged `BUFFER_BRIDGE_DONE` for channel `sitkoalex.ai.business` with no errors and no unplanned additions while drafts are unapproved.
-- 2026-10-01 05:07 MSK check: `BUFFER_BRIDGE_DONE {channel: sitkoalex.ai.business, added: 0, skipped: 0, errors: 0}`.
+- 2026-10-01 09:07 MSK: `BUFFER_BRIDGE_DONE {channel: sitkoalex.ai.business, added: 0, skipped: 0, errors: 0}`; deployment SUCCESS.
 - Continue hourly log verification and keep public publication gated on explicit approval plus valid media_url.
 
 ### Live Avito service
@@ -84,28 +102,17 @@ Do not mix Instagram runtime or secrets into this service unless explicitly rede
 
 ## Lead funnel
 Instagram -> free AI business audit -> Telegram/SaleBot capture -> qualification -> manager/offer handoff.
-- Funnel specification is now stored in `ai_audit_funnel_spec.md`.
-- Seven-question intake, qualification score, segments, audit output, state machine, statuses, privacy gates and implementation order are defined.
-- Public `РАЗБОР` CTA remains disabled until the intake route is implemented and tested end-to-end with a synthetic lead.
-Existing Best Climate certificate funnel can remain separate unless deliberately used for HVAC traffic; do not confuse the AI-business profile proposition with HVAC lead incentives.
-Keep irreversible/high-risk changes gated: payment data, account ownership, 2FA, secrets, identity documents.
+- Funnel specification: `ai_audit_funnel_spec.md`.
+- Public `РАЗБОР` CTA remains disabled until intake is implemented and tested end-to-end with a synthetic lead.
+Existing Best Climate certificate funnel remains separate unless deliberately used for HVAC traffic.
 
 ## Manual-intervention policy
-Ask the user only when one of these is genuinely required:
-1. login/password entry on provider page;
-2. 2FA/SMS/email code;
-3. CAPTCHA or identity verification;
-4. OAuth approval that cannot be completed by available connector;
-5. secure secret paste into provider secret store;
-6. physical upload of a local media file where no API/cloud route is available;
-7. explicit approval for new public content, ad spend, or irreversible settings.
+Ask the user only when genuinely required for login/password entry, 2FA, CAPTCHA/identity verification, OAuth approval unavailable to connectors, secure secret paste, physical local media upload, or explicit approval for public content/ad spend/irreversible settings.
 
-When a manual action is needed, send one concise Gmail alert and continue all other cloud/preparation work in parallel. Do not repeat the same alert until the blocker state changes.
+When a manual action is needed, send one concise Gmail alert and continue all other cloud/preparation work in parallel. Do not repeat the same alert until blocker state changes.
 
 ## Cost policy
-- Prefer free tiers and reuse existing services safely.
-- Avoid new paid services unless the free path is insufficient.
-- Railway trial/Hobby should only be upgraded when needed for uptime; no paid upgrade without explicit user approval.
+Prefer free tiers and reuse existing services safely. No paid upgrade without explicit approval.
 
 ## Recovery / fallback order
 1. Direct API / connected app tool
@@ -116,5 +123,9 @@ When a manual action is needed, send one concise Gmail alert and continue all ot
 
 Do not use TinyFish for this project.
 
-## Next critical checkpoint
-Implement the 7-question intake from `ai_audit_funnel_spec.md` in the available Telegram/SaleBot path, then test one synthetic lead end-to-end before enabling the public `РАЗБОР` CTA. Continue scheduled Buffer worker verification. Keep all 12 Reels unapproved until media exists and the user explicitly approves publication.
+## Next critical checkpoints
+1. Verify Instagram UI Account Status/recommendation eligibility, Professional Dashboard/tools, Name/BIO/link alignment when browser access is available.
+2. Implement/test the 7-question audit intake before enabling `РАЗБОР`.
+3. Prepare premium Highlight cover masters and Story scripts without publishing.
+4. Keep all 12 Reels unapproved until media exists and the user explicitly approves publication.
+5. Continue scheduled Buffer worker verification.
