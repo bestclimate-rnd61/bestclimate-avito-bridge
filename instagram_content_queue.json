@@ -142,5 +142,71 @@
     "caption": "Неделя 1 — аудит повторяющихся задач и метрик. Неделя 2 — один процесс с быстрым эффектом. Неделя 3 — контроль качества и исправление ошибок. Неделя 4 — только после результата масштабирование. Не надо автоматизировать весь бизнес за выходные.\n\n#планбизнеса #иидлябизнеса #автоматизация #нейросети #предприниматель",
     "cover_text": "AI ЗА 30 ДНЕЙ: ПЛАН",
     "cta": "Сохрани дорожную карту и начни с одного процесса"
+  },
+  {
+    "id": "highlight-seed-start",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "media_url": "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:da7fdecc-e00d-4588-9ba1-25d9b74e45b7",
+    "share_to_feed": false,
+    "mode": "shareNow",
+    "caption": "HIGHLIGHT • СТАРТ"
+  },
+  {
+    "id": "highlight-seed-cases",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "media_url": "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:d532e60d-c5e1-4a4e-8fea-9f0cadb1f7b9",
+    "share_to_feed": false,
+    "mode": "shareNow",
+    "caption": "HIGHLIGHT • КЕЙСЫ"
+  },
+  {
+    "id": "highlight-seed-ai",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "media_url": "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:10e2ed5d-8c1c-47a5-be53-0766446ef533",
+    "share_to_feed": false,
+    "mode": "shareNow",
+    "caption": "HIGHLIGHT • AI"
+  },
+  {
+    "id": "highlight-seed-tools",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "media_url": "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:82bcbb20-6936-4db5-9317-9f4342fa77a6",
+    "share_to_feed": false,
+    "mode": "shareNow",
+    "caption": "HIGHLIGHT • ИНСТРУМЕНТЫ"
+  },
+  {
+    "id": "highlight-seed-about",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "media_url": "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:6ca8431c-136f-4e31-8e50-e1ddbfa7686b",
+    "share_to_feed": false,
+    "mode": "shareNow",
+    "caption": "HIGHLIGHT • ОБО МНЕ"
+  },
+  {
+    "id": "highlight-seed-faq",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "media_url": "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:446f5560-619d-4795-a802-0ad01719662b",
+    "share_to_feed": false,
+    "mode": "shareNow",
+    "caption": "HIGHLIGHT • FAQ"
   }
 ]
