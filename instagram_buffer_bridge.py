@@ -22,7 +22,7 @@ def gql(query: str, variables: dict | None = None) -> dict:
         headers={
             "Content-Type": "application/json",
             "Authorization": f"Bearer {token}",
-            "User-Agent": "sitkoalex-ai-business-buffer-bridge/1.0",
+            "User-Agent": "sitkoalex-ai-business-buffer-bridge/1.1",
         },
         method="POST",
     )
@@ -71,7 +71,7 @@ def discover_target() -> tuple[str, str]:
     raise RuntimeError(f"Instagram channel '{TARGET_CHANNEL}' not found")
 
 
-def existing_texts(org_id: str, channel_id: str) -> set[str]:
+def existing_posts(org_id: str, channel_id: str) -> dict[str, dict]:
     data = gql("""
         query GetPosts($orgId: OrganizationId!, $channelId: ChannelId!) {
           posts(
@@ -87,19 +87,19 @@ def existing_texts(org_id: str, channel_id: str) -> set[str]:
         }
     """, {"orgId": org_id, "channelId": channel_id})
     edges = (((data.get("posts") or {}).get("edges")) or [])
-    texts = set()
+    posts = {}
     for edge in edges:
         node = edge.get("node") or {}
         text = str(node.get("text") or "").strip()
         if text:
-            texts.add(text)
+            posts[text] = node
             print("BUFFER_BRIDGE_EXISTING " + json.dumps({
                 "post_id": node.get("id"),
                 "status": node.get("status"),
                 "due_at": node.get("dueAt"),
                 "text_preview": text[:120]
             }, ensure_ascii=False), flush=True)
-    return texts
+    return posts
 
 
 def create_post(channel_id: str, item: dict) -> dict:
@@ -117,11 +117,12 @@ def create_post(channel_id: str, item: dict) -> dict:
     if media_kind not in {"video", "image"}:
         raise ValueError(f"unsupported media_kind: {media_kind}")
 
+    mode = str(item.get("mode") or "shareNow")
     input_data = {
         "text": caption,
         "channelId": channel_id,
         "schedulingType": "automatic",
-        "mode": "addToQueue",
+        "mode": mode,
         "assets": [{media_kind: {"url": media_url}}],
         "metadata": {
             "instagram": {
@@ -148,6 +149,24 @@ def create_post(channel_id: str, item: dict) -> dict:
     return post
 
 
+def share_existing_now(post_id: str) -> dict:
+    data = gql("""
+        mutation EditPost($input: EditPostInput!) {
+          editPost(input: $input) {
+            ... on PostActionSuccess { post { id text dueAt status channelId } }
+            ... on MutationError { message }
+          }
+        }
+    """, {"input": {"id": post_id, "mode": "shareNow", "schedulingType": "automatic"}})
+    result = data.get("editPost") or {}
+    if result.get("message"):
+        raise RuntimeError(result["message"])
+    post = result.get("post")
+    if not post:
+        raise RuntimeError(f"Unexpected editPost response: {result}")
+    return post
+
+
 def main() -> int:
     print("BUFFER_BRIDGE_START", flush=True)
     if not QUEUE_FILE.exists():
@@ -159,24 +178,51 @@ def main() -> int:
         raise RuntimeError("Queue file must contain a JSON array")
 
     org_id, channel_id = discover_target()
-    seen = existing_texts(org_id, channel_id)
-    added = skipped = errors = 0
+    existing = existing_posts(org_id, channel_id)
+    added = skipped = errors = promoted = 0
 
     for item in queue:
-        if added >= MAX_ADD_PER_RUN:
+        if added + promoted >= MAX_ADD_PER_RUN:
             break
         if not isinstance(item, dict) or not item.get("approved"):
             continue
         caption = str(item.get("caption") or "").strip()
-        if not caption or caption in seen:
+        if not caption:
             skipped += 1
             continue
+
+        current = existing.get(caption)
+        if current:
+            status = str(current.get("status") or "").lower()
+            if status == "sent":
+                skipped += 1
+                continue
+            try:
+                post = share_existing_now(str(current.get("id")))
+                promoted += 1
+                print("BUFFER_BRIDGE_SHARE_NOW " + json.dumps({
+                    "queue_id": item.get("id"),
+                    "post_id": post.get("id"),
+                    "status": post.get("status"),
+                    "due_at": post.get("dueAt")
+                }, ensure_ascii=False), flush=True)
+            except Exception as exc:
+                errors += 1
+                print("BUFFER_BRIDGE_ITEM_ERROR " + json.dumps({
+                    "queue_id": item.get("id"), "error": str(exc)[:500]
+                }, ensure_ascii=False), flush=True)
+                break
+            continue
+
         try:
             post = create_post(channel_id, item)
-            seen.add(caption)
+            existing[caption] = post
             added += 1
             print("BUFFER_BRIDGE_ADDED " + json.dumps({
-                "queue_id": item.get("id"), "post_id": post.get("id"), "due_at": post.get("dueAt")
+                "queue_id": item.get("id"),
+                "post_id": post.get("id"),
+                "status": post.get("status"),
+                "due_at": post.get("dueAt")
             }, ensure_ascii=False), flush=True)
         except Exception as exc:
             errors += 1
@@ -186,7 +232,11 @@ def main() -> int:
             break
 
     print("BUFFER_BRIDGE_DONE " + json.dumps({
-        "channel": TARGET_CHANNEL, "added": added, "skipped": skipped, "errors": errors
+        "channel": TARGET_CHANNEL,
+        "added": added,
+        "promoted": promoted,
+        "skipped": skipped,
+        "errors": errors
     }, ensure_ascii=False), flush=True)
     return 0 if errors == 0 else 2
 
