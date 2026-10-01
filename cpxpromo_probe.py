@@ -20,6 +20,13 @@ def _compact(payload):
         for key in ("minBidPenny", "maxBidPenny", "recBidPenny", "bidPenny", "minLimitPenny", "maxLimitPenny", "recLimitPenny"):
             if key in manual:
                 result[key] = manual.get(key)
+        bids = manual.get("bids")
+        if isinstance(bids, list):
+            values = []
+            for row in bids:
+                if isinstance(row, dict) and isinstance(row.get("valuePenny"), int):
+                    values.append(row["valuePenny"])
+            result["allowedBidPennyFirst10"] = sorted(set(values))[:10]
     if auto:
         for key in ("budgetPenny", "budgetType"):
             if key in auto:
