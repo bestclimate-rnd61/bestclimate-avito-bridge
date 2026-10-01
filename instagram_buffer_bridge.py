@@ -23,7 +23,7 @@ def gql(query: str, variables: dict | None = None) -> dict:
         headers={
             "Content-Type": "application/json",
             "Authorization": f"Bearer {token}",
-            "User-Agent": "sitkoalex-ai-business-buffer-bridge/1.2",
+            "User-Agent": "sitkoalex-ai-business-buffer-bridge/1.3",
         },
         method="POST",
     )
@@ -103,6 +103,10 @@ def existing_posts(org_id: str, channel_id: str) -> dict[str, dict]:
     return posts
 
 
+def item_is_prelaunch_draft(item: dict) -> bool:
+    return PRELAUNCH_MODE and not bool(item.get("publish_during_prelaunch"))
+
+
 def create_post(channel_id: str, item: dict) -> dict:
     caption = str(item.get("caption") or "").strip()
     media_url = str(item.get("media_url") or "").strip()
@@ -118,13 +122,14 @@ def create_post(channel_id: str, item: dict) -> dict:
     if media_kind not in {"video", "image"}:
         raise ValueError(f"unsupported media_kind: {media_kind}")
 
-    mode = "addToQueue" if PRELAUNCH_MODE else str(item.get("mode") or "shareNow")
+    draft_now = item_is_prelaunch_draft(item)
+    mode = "addToQueue" if draft_now else str(item.get("mode") or "shareNow")
     input_data = {
         "text": caption,
         "channelId": channel_id,
         "schedulingType": "automatic",
         "mode": mode,
-        "saveToDraft": PRELAUNCH_MODE,
+        "saveToDraft": draft_now,
         "assets": [{media_kind: {"url": media_url}}],
         "metadata": {
             "instagram": {
@@ -171,7 +176,7 @@ def edit_existing(post_id: str, input_patch: dict) -> dict:
 
 
 def share_existing_now(post_id: str) -> dict:
-    return edit_existing(post_id, {"mode": "shareNow", "schedulingType": "automatic"})
+    return edit_existing(post_id, {"mode": "shareNow", "schedulingType": "automatic", "saveToDraft": False})
 
 
 def move_existing_to_draft(post_id: str) -> dict:
@@ -203,12 +208,13 @@ def main() -> int:
             continue
 
         current = existing.get(caption)
+        draft_now = item_is_prelaunch_draft(item)
         if current:
             status = str(current.get("status") or "").lower()
             if status == "sent":
                 skipped += 1
                 continue
-            if PRELAUNCH_MODE:
+            if draft_now:
                 if status == "draft":
                     skipped += 1
                     continue
@@ -254,7 +260,8 @@ def main() -> int:
                 "post_id": post.get("id"),
                 "status": post.get("status"),
                 "due_at": post.get("dueAt"),
-                "prelaunch_mode": PRELAUNCH_MODE
+                "prelaunch_mode": PRELAUNCH_MODE,
+                "publish_during_prelaunch": bool(item.get("publish_during_prelaunch"))
             }, ensure_ascii=False), flush=True)
         except Exception as exc:
             errors += 1
