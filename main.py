@@ -2,6 +2,7 @@ import os
 import re
 
 import httpx
+from fastapi import Response, HTTPException
 
 # BotFather tokens pasted from mobile can contain line breaks, zero-width chars
 # or surrounding quotes/backticks. Normalize those without exposing the secret.
@@ -79,3 +80,35 @@ register_autoload_category_probe(app, _avito_get)
 register_cpxpromo_probe(app, _avito_get)
 register_cpxpromo_lower(app, _avito_get, _get_token, AVITO_API_BASE)
 app.include_router(lead_router)
+
+# Public media proxy used by Buffer for Instagram Stories. Adobe short URLs
+# can render in a browser but Buffer's server-side fetcher rejects the redirect.
+_HIGHLIGHT_MEDIA = {
+    "start": "https://at.adobe.com/Q9yNDGlWoDN4tG5f",
+    "ai-business": "https://at.adobe.com/hPucrN3WEMY2uPHw",
+    "automation": "https://at.adobe.com/rFOWGiVRopESmgUg",
+    "cases": "https://at.adobe.com/GeJXp7ZbaZO5UyLw",
+    "tools": "https://at.adobe.com/hg5NgAyscbbaJnWB",
+    "audit": "https://at.adobe.com/PmUOzEEQw1w3tgaq",
+    "about": "https://at.adobe.com/5CWj31wSiQZdX1vF",
+    "faq": "https://at.adobe.com/sPq539cYMcLUaHbr",
+}
+
+@app.get("/highlights/{slug}.png")
+async def highlight_media(slug: str):
+    source = _HIGHLIGHT_MEDIA.get(slug)
+    if not source:
+        raise HTTPException(status_code=404, detail="not found")
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=30) as client:
+            r = await client.get(source, headers={"User-Agent": "Mozilla/5.0"})
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=type(exc).__name__) from exc
+    if r.status_code != 200:
+        raise HTTPException(status_code=502, detail=f"upstream {r.status_code}")
+    content_type = r.headers.get("content-type", "image/png").split(";", 1)[0]
+    return Response(
+        content=r.content,
+        media_type=content_type,
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
