@@ -81,8 +81,8 @@ register_cpxpromo_probe(app, _avito_get)
 register_cpxpromo_lower(app, _avito_get, _get_token, AVITO_API_BASE)
 app.include_router(lead_router)
 
-# Public media proxy used by Buffer for Instagram Stories. Adobe short URLs
-# can render in a browser but Buffer's server-side fetcher rejects the redirect.
+# Public media proxy used by Buffer for Instagram Stories. Buffer performs both
+# GET and HEAD checks, so both methods must return a publicly accessible image.
 _HIGHLIGHT_MEDIA = {
     "start": "https://at.adobe.com/Q9yNDGlWoDN4tG5f",
     "ai-business": "https://at.adobe.com/hPucrN3WEMY2uPHw",
@@ -94,8 +94,7 @@ _HIGHLIGHT_MEDIA = {
     "faq": "https://at.adobe.com/sPq539cYMcLUaHbr",
 }
 
-@app.get("/highlights/{slug}.png")
-async def highlight_media(slug: str):
+async def _fetch_highlight(slug: str):
     source = _HIGHLIGHT_MEDIA.get(slug)
     if not source:
         raise HTTPException(status_code=404, detail="not found")
@@ -107,8 +106,25 @@ async def highlight_media(slug: str):
     if r.status_code != 200:
         raise HTTPException(status_code=502, detail=f"upstream {r.status_code}")
     content_type = r.headers.get("content-type", "image/png").split(";", 1)[0]
+    return r.content, content_type
+
+@app.get("/highlights/{slug}.png")
+async def highlight_media(slug: str):
+    content, content_type = await _fetch_highlight(slug)
     return Response(
-        content=r.content,
+        content=content,
         media_type=content_type,
         headers={"Cache-Control": "public, max-age=3600"},
+    )
+
+@app.head("/highlights/{slug}.png")
+async def highlight_media_head(slug: str):
+    content, content_type = await _fetch_highlight(slug)
+    return Response(
+        status_code=200,
+        media_type=content_type,
+        headers={
+            "Cache-Control": "public, max-age=3600",
+            "Content-Length": str(len(content)),
+        },
     )
