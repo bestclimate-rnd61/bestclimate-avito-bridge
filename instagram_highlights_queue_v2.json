@@ -1,0 +1,90 @@
+[
+  {
+    "id": "highlight-v2-start",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "media_url": "https://at.adobe.com/Q9yNDGlWoDN4tG5f",
+    "share_to_feed": false,
+    "mode": "shareNow",
+    "caption": "HIGHLIGHT V2 • СТАРТ • Кто я и как пользоваться профилем"
+  },
+  {
+    "id": "highlight-v2-ai-business",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "media_url": "https://at.adobe.com/hPucrN3WEMY2uPHw",
+    "share_to_feed": false,
+    "mode": "shareNow",
+    "caption": "HIGHLIGHT V2 • AI-БИЗНЕС • ИИ для заявок, контента, аналитики и продаж"
+  },
+  {
+    "id": "highlight-v2-automation",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "media_url": "https://at.adobe.com/rFOWGiVRopESmgUg",
+    "share_to_feed": false,
+    "mode": "shareNow",
+    "caption": "HIGHLIGHT V2 • АВТОМАТИЗАЦИЯ • Что можно передать AI и освободить время"
+  },
+  {
+    "id": "highlight-v2-cases",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "media_url": "https://at.adobe.com/GeJXp7ZbaZO5UyLw",
+    "share_to_feed": false,
+    "mode": "shareNow",
+    "caption": "HIGHLIGHT V2 • КЕЙСЫ • Реальные внедрения, решения и результат"
+  },
+  {
+    "id": "highlight-v2-tools",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "media_url": "https://at.adobe.com/hg5NgAyscbbaJnWB",
+    "share_to_feed": false,
+    "mode": "shareNow",
+    "caption": "HIGHLIGHT V2 • ИНСТРУМЕНТЫ • Сервисы, связки и AI-инструменты"
+  },
+  {
+    "id": "highlight-v2-audit",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "media_url": "https://at.adobe.com/PmUOzEEQw1w3tgaq",
+    "share_to_feed": false,
+    "mode": "shareNow",
+    "caption": "HIGHLIGHT V2 • РАЗБОР • Что автоматизировать именно в твоём бизнесе"
+  },
+  {
+    "id": "highlight-v2-about",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "media_url": "https://at.adobe.com/5CWj31wSiQZdX1vF",
+    "share_to_feed": false,
+    "mode": "shareNow",
+    "caption": "HIGHLIGHT V2 • ОБО МНЕ • Александр Ситько — предприниматель, внедряю ИИ"
+  },
+  {
+    "id": "highlight-v2-faq",
+    "approved": true,
+    "publish_during_prelaunch": true,
+    "type": "story",
+    "media_kind": "image",
+    "media_url": "https://at.adobe.com/sPq539cYMcLUaHbr",
+    "share_to_feed": false,
+    "mode": "shareNow",
+    "caption": "HIGHLIGHT V2 • ВОПРОСЫ • Ответы про внедрение ИИ, стоимость, сроки и запуск"
+  }
+]
