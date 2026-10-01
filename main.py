@@ -23,6 +23,7 @@ from app import AVITO_API_BASE, _account_id, _avito_get, _count_items, _get_toke
 from autoload_category_probe import register_autoload_category_probe
 from autoload_target_probe import register_autoload_target_probe
 from campaign_probe import register_campaign_probe
+from cpxpromo_lower import register_cpxpromo_lower
 from cpxpromo_probe import register_cpxpromo_probe
 from diagnostic import register_readonly_diagnostic
 from feed_server import register_feed_server
@@ -76,4 +77,5 @@ register_flagship_optimizer(app, _avito_get, _get_token, AVITO_API_BASE)
 register_autoload_target_probe(app, _avito_get)
 register_autoload_category_probe(app, _avito_get)
 register_cpxpromo_probe(app, _avito_get)
+register_cpxpromo_lower(app, _avito_get, _get_token, AVITO_API_BASE)
 app.include_router(lead_router)
