@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "profile": "sitkoalex.ai.business",
+  "public_cta_enabled": false,
+  "entry": "consent_notice",
+  "fields": ["source", "utm_campaign", "answers", "score", "segment", "contact_method", "consent_timestamp", "status", "created_at", "updated_at"],
+  "states": {
+    "consent_notice": {"on_accept": "q1", "on_decline": "closed"},
+    "q1": {"field": "business_niche", "next": "q2"},
+    "q2": {"field": "lead_sources", "next": "q3"},
+    "q3": {"field": "lead_volume", "options": ["0-10", "11-30", "31-100", "100+"], "next": "q4"},
+    "q4": {"field": "main_bottleneck", "options": ["slow_replies", "lost_leads", "content_production", "repetitive_admin", "sales_follow_up", "analytics", "other"], "next": "q5"},
+    "q5": {"field": "current_workflow", "next": "q6"},
+    "q6": {"field": "existing_stack", "next": "q7"},
+    "q7": {"field": "desired_30_day_result_and_contact", "next": "qualification"},
+    "qualification": {"next": "audit_result"},
+    "audit_result": {"next": "optional_strategy_call"},
+    "optional_strategy_call": {"on_yes": "handoff", "on_no": "closed"},
+    "handoff": {"terminal": true},
+    "closed": {"terminal": true}
+  },
+  "scoring": {
+    "lead_volume_31_plus": 2,
+    "bottleneck_lost_or_slow": 2,
+    "repeatable_workflow": 2,
+    "structured_stack": 1,
+    "measurable_goal": 1,
+    "segments": {"education": [0, 2], "opportunity": [3, 5], "priority": [6, 8]}
+  },
+  "resume_policy": {
+    "persist_after_each_answer": true,
+    "resume_from_first_unanswered_state": true,
+    "idempotency_key": "chat_id:created_at",
+    "duplicate_submission": "return_existing_audit_if_audit_ready_or_sent"
+  },
+  "privacy": {
+    "forbidden_inputs": ["password", "api_key", "2fa_code", "payment_card", "identity_document"],
+    "marketing_opt_in_separate": true
+  },
+  "test_fixture": {
+    "business_niche": "HVAC sales and installation",
+    "lead_sources": ["Instagram", "Avito", "website", "calls"],
+    "lead_volume": "31-100",
+    "main_bottleneck": ["slow_replies", "lost_leads"],
+    "current_workflow": "Lead arrives, manager replies manually, quote is prepared, follow-up is inconsistent.",
+    "existing_stack": "messengers + spreadsheets + website",
+    "desired_30_day_result_and_contact": "First response under 5 minutes; Telegram",
+    "expected_segment": "priority"
+  }
+}
