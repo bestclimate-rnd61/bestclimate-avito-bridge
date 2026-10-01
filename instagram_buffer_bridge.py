@@ -9,6 +9,7 @@ API_URL = "https://api.buffer.com"
 QUEUE_FILE = Path(os.getenv("BUFFER_QUEUE_FILE", "instagram_content_queue.json"))
 TARGET_CHANNEL = os.getenv("BUFFER_CHANNEL_NAME", "sitkoalex.ai.business").strip().lower()
 MAX_ADD_PER_RUN = int(os.getenv("BUFFER_MAX_ADD_PER_RUN", "10"))
+PRELAUNCH_MODE = os.getenv("BUFFER_PRELAUNCH_MODE", "false").strip().lower() in {"1", "true", "yes", "on"}
 
 
 def gql(query: str, variables: dict | None = None) -> dict:
@@ -22,7 +23,7 @@ def gql(query: str, variables: dict | None = None) -> dict:
         headers={
             "Content-Type": "application/json",
             "Authorization": f"Bearer {token}",
-            "User-Agent": "sitkoalex-ai-business-buffer-bridge/1.1",
+            "User-Agent": "sitkoalex-ai-business-buffer-bridge/1.2",
         },
         method="POST",
     )
@@ -117,12 +118,13 @@ def create_post(channel_id: str, item: dict) -> dict:
     if media_kind not in {"video", "image"}:
         raise ValueError(f"unsupported media_kind: {media_kind}")
 
-    mode = str(item.get("mode") or "shareNow")
+    mode = "addToQueue" if PRELAUNCH_MODE else str(item.get("mode") or "shareNow")
     input_data = {
         "text": caption,
         "channelId": channel_id,
         "schedulingType": "automatic",
         "mode": mode,
+        "saveToDraft": PRELAUNCH_MODE,
         "assets": [{media_kind: {"url": media_url}}],
         "metadata": {
             "instagram": {
@@ -149,7 +151,8 @@ def create_post(channel_id: str, item: dict) -> dict:
     return post
 
 
-def share_existing_now(post_id: str) -> dict:
+def edit_existing(post_id: str, input_patch: dict) -> dict:
+    payload = {"id": post_id, **input_patch}
     data = gql("""
         mutation EditPost($input: EditPostInput!) {
           editPost(input: $input) {
@@ -157,7 +160,7 @@ def share_existing_now(post_id: str) -> dict:
             ... on MutationError { message }
           }
         }
-    """, {"input": {"id": post_id, "mode": "shareNow", "schedulingType": "automatic"}})
+    """, {"input": payload})
     result = data.get("editPost") or {}
     if result.get("message"):
         raise RuntimeError(result["message"])
@@ -167,8 +170,16 @@ def share_existing_now(post_id: str) -> dict:
     return post
 
 
+def share_existing_now(post_id: str) -> dict:
+    return edit_existing(post_id, {"mode": "shareNow", "schedulingType": "automatic"})
+
+
+def move_existing_to_draft(post_id: str) -> dict:
+    return edit_existing(post_id, {"saveToDraft": True})
+
+
 def main() -> int:
-    print("BUFFER_BRIDGE_START", flush=True)
+    print("BUFFER_BRIDGE_START " + json.dumps({"prelaunch_mode": PRELAUNCH_MODE}), flush=True)
     if not QUEUE_FILE.exists():
         print(f"BUFFER_BRIDGE_NO_QUEUE file={QUEUE_FILE}", flush=True)
         return 0
@@ -179,10 +190,10 @@ def main() -> int:
 
     org_id, channel_id = discover_target()
     existing = existing_posts(org_id, channel_id)
-    added = skipped = errors = promoted = 0
+    added = skipped = errors = promoted = paused = 0
 
     for item in queue:
-        if added + promoted >= MAX_ADD_PER_RUN:
+        if added + promoted + paused >= MAX_ADD_PER_RUN:
             break
         if not isinstance(item, dict) or not item.get("approved"):
             continue
@@ -196,6 +207,26 @@ def main() -> int:
             status = str(current.get("status") or "").lower()
             if status == "sent":
                 skipped += 1
+                continue
+            if PRELAUNCH_MODE:
+                if status == "draft":
+                    skipped += 1
+                    continue
+                try:
+                    post = move_existing_to_draft(str(current.get("id")))
+                    paused += 1
+                    print("BUFFER_BRIDGE_MOVED_TO_DRAFT " + json.dumps({
+                        "queue_id": item.get("id"),
+                        "post_id": post.get("id"),
+                        "status": post.get("status"),
+                        "due_at": post.get("dueAt")
+                    }, ensure_ascii=False), flush=True)
+                except Exception as exc:
+                    errors += 1
+                    print("BUFFER_BRIDGE_ITEM_ERROR " + json.dumps({
+                        "queue_id": item.get("id"), "error": str(exc)[:500]
+                    }, ensure_ascii=False), flush=True)
+                    break
                 continue
             try:
                 post = share_existing_now(str(current.get("id")))
@@ -222,7 +253,8 @@ def main() -> int:
                 "queue_id": item.get("id"),
                 "post_id": post.get("id"),
                 "status": post.get("status"),
-                "due_at": post.get("dueAt")
+                "due_at": post.get("dueAt"),
+                "prelaunch_mode": PRELAUNCH_MODE
             }, ensure_ascii=False), flush=True)
         except Exception as exc:
             errors += 1
@@ -233,8 +265,10 @@ def main() -> int:
 
     print("BUFFER_BRIDGE_DONE " + json.dumps({
         "channel": TARGET_CHANNEL,
+        "prelaunch_mode": PRELAUNCH_MODE,
         "added": added,
         "promoted": promoted,
+        "paused": paused,
         "skipped": skipped,
         "errors": errors
     }, ensure_ascii=False), flush=True)
