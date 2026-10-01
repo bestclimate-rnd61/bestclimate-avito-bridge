@@ -31,8 +31,16 @@ Prefer OAuth/API tokens and connected tools over usernames/passwords. Never stor
 - Worker: `instagram_buffer_bridge.py`
 - Only items with `approved=true` are eligible for queueing/publishing.
 - No unapproved public content, ad spend, or paid promotion.
-- Staged draft Reels (all approved=false, media_url empty): `ai-reel-001-start`, `ai-reel-002-team`, `ai-reel-003-audit`.
-- Do not publish these drafts until video media URLs exist and the user explicitly approves public publication.
+- Launch queue now contains 12 Reel drafts `ai-reel-001` through `ai-reel-012`; all remain `approved=false` with empty `media_url`.
+- Do not publish any draft until a valid video media URL exists and the user explicitly approves public publication.
+
+### Launch content architecture
+Three future pinned Reels are selected by role, but remain unpublished:
+1. `ai-reel-001-start` — PIN 1 / POSITIONING: who Alexander is, why this profile exists, real AI implementation in his own businesses. Primary profile-conversion asset.
+2. `ai-reel-003-audit` — PIN 2 / LEAD MAGNET: 7-answer AI business audit, CTA toward the free diagnostic funnel. Primary lead-capture asset.
+3. `ai-reel-011-case` — PIN 3 / PROOF: case-study framework problem -> baseline -> automation -> cost -> result -> failure/lesson. Primary trust/proof asset; publish only when the first real case has verifiable before/after data.
+
+Supporting launch sequence: 002 AI team/system, 004 lead handling 24/7, 005 content factory, 006 AI does not fix chaos, 007 cloud processes 24/7, 008 three implementation mistakes, 009 AI ROI metrics, 010 no-code architecture, 012 30-day roadmap. Keep claims factual and demonstrable.
 
 ## Railway
 Project: bestclimate-avito-bridge
@@ -53,13 +61,12 @@ Required variables:
 - BUFFER_MAX_ADD_PER_RUN=10
 - BUFFER_API_KEY=<SECRET IN RAILWAY ONLY>
 
-Current verified state as of 2026-10-01 00:06 Moscow:
+Current verified state:
 - `BUFFER_API_KEY` is present in Railway Variables.
 - Railway config deploy completed successfully after the secret was saved.
 - Service runs hourly cron `5 * * * *`.
 - Temporary pre-deploy test hook removed; `preDeployCommand=[]`.
-- Scheduled worker run started successfully and logged `BUFFER_BRIDGE_DONE` for channel `sitkoalex.ai.business` with `added=0`, `skipped=0`, `errors=0`.
-- Three draft Reels exist but remain `approved=false`, so no item was queued or published.
+- Scheduled worker has logged `BUFFER_BRIDGE_DONE` for channel `sitkoalex.ai.business` with no errors and no unplanned additions while drafts are unapproved.
 - Continue hourly log verification and keep public publication gated on explicit approval plus valid media_url.
 
 ### Live Avito service
@@ -73,7 +80,8 @@ Do not mix Instagram runtime or secrets into this service unless explicitly rede
 - Buffer is the low-cost control path for sitkoalex.ai.business.
 
 ## Lead funnel
-Instagram -> Telegram -> subscription check @bestclimate_club -> 3,000 RUB certificate -> manager handoff.
+Instagram -> free AI business audit -> Telegram/SaleBot capture -> qualification -> manager/offer handoff.
+Existing Best Climate certificate funnel can remain separate unless deliberately used for HVAC traffic; do not confuse the AI-business profile proposition with HVAC lead incentives.
 Keep irreversible/high-risk changes gated: payment data, account ownership, 2FA, secrets, identity documents.
 
 ## Manual-intervention policy
@@ -103,4 +111,4 @@ When a manual action is needed, send one concise Gmail alert and continue all ot
 Do not use TinyFish for this project.
 
 ## Next critical checkpoint
-Continue scheduled Buffer worker verification. In parallel, expand the staged 12-Reel launch system and three pinned-post concepts without approving or publishing them. The first three drafts establish the pillars: founder/real implementation, AI team/system, and AI audit/lead magnet.
+Convert the three pinned concepts into production-ready shot lists and cover specifications while keeping them unapproved. Continue scheduled Buffer worker verification. Build the free AI audit as the first funnel asset before enabling a public CTA that promises it.
