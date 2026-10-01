@@ -30,12 +30,16 @@ def register_cpxpromo_lower(app: FastAPI, avito_get, get_token, api_base: str):
                     continue
                 action_type = bids.get("actionTypeID")
                 manual = bids.get("manual") if isinstance(bids.get("manual"), dict) else {}
+                allowed = []
+                for row in manual.get("bids", []) if isinstance(manual.get("bids"), list) else []:
+                    if isinstance(row, dict) and isinstance(row.get("valuePenny"), int):
+                        allowed.append(row["valuePenny"])
+                allowed = sorted(set(allowed))
                 min_bid = manual.get("minBidPenny")
-                if action_type != 5 or not isinstance(min_bid, int):
-                    results[str(item_id)] = {"skipped": "unsupported_action_or_min_bid", "actionTypeID": action_type, "minBidPenny": min_bid}
+                new_bid = allowed[0] if allowed else min_bid
+                if action_type != 5 or not isinstance(new_bid, int):
+                    results[str(item_id)] = {"skipped": "unsupported_action_or_bid", "actionTypeID": action_type, "minBidPenny": min_bid}
                     continue
-                # API requires bid strictly above the minimum, so use +1 kopek.
-                new_bid = min_bid + 1
                 token = await get_token()
                 async with httpx.AsyncClient(timeout=30) as client:
                     response = await client.post(
@@ -43,11 +47,15 @@ def register_cpxpromo_lower(app: FastAPI, avito_get, get_token, api_base: str):
                         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
                         json={"itemID": item_id, "bidPenny": new_bid, "actionTypeID": action_type},
                     )
+                safe_body = ""
+                if response.status_code >= 400:
+                    safe_body = response.text[:400]
                 results[str(item_id)] = {
                     "http": response.status_code,
                     "actionTypeID": action_type,
                     "minBidPenny": min_bid,
                     "newBidPenny": new_bid,
+                    "errorBody": safe_body,
                 }
                 await asyncio.sleep(0.15)
             except HTTPException as exc:
