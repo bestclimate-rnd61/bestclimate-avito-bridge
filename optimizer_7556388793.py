@@ -10,11 +10,13 @@ FEED_URL = "https://bestclimate-avito-bridge-live-production.up.railway.app/feed
 TARGETS = {
     7556388793: {
         "price": 65400,
+        "allowed_current_prices": {79990, 65400},
         "ad_id": "BC-7556388793-OPTIMIZED",
         "label": "flagship",
     },
     8324765982: {
         "price": 73305,
+        "allowed_current_prices": {73305},
         "ad_id": "BC-8324765982-OPTIMIZED",
         "label": "ballu_ice_peak",
     },
@@ -72,11 +74,13 @@ def register_flagship_optimizer(
             return
 
         target_price = int(config["price"])
+        allowed_current_prices = {int(v) for v in config.get("allowed_current_prices", {target_price})}
         target_ad_id = str(config["ad_id"])
         result: dict[str, Any] = {
             "target": target_id,
             "label": config["label"],
             "upload_requested": False,
+            "target_price": target_price,
         }
         try:
             active = await avito_get(
@@ -100,8 +104,13 @@ def register_flagship_optimizer(
                 return
             result["title_before"] = target.get("title")
             result["price_before"] = target.get("price")
-            if target.get("price") != target_price:
+            try:
+                current_price = int(target.get("price"))
+            except (TypeError, ValueError):
+                current_price = -1
+            if current_price not in allowed_current_prices:
                 result["aborted"] = "unexpected_price"
+                result["allowed_current_prices"] = sorted(allowed_current_prices)
                 print("AVITO_SAFE_OPTIMIZE " + json.dumps(result, ensure_ascii=False, sort_keys=True), flush=True)
                 return
 
@@ -147,7 +156,7 @@ def register_flagship_optimizer(
             print("AVITO_SAFE_OPTIMIZE " + json.dumps(result, ensure_ascii=False, sort_keys=True), flush=True)
 
             await asyncio.sleep(50)
-            followup: dict[str, Any] = {"target": target_id, "label": config["label"]}
+            followup: dict[str, Any] = {"target": target_id, "label": config["label"], "target_price": target_price}
             try:
                 current_items = await avito_get(
                     "/autoload/v4/uploads/current/items",
