@@ -9,7 +9,7 @@ from fastapi import FastAPI, HTTPException
 FEED_URL = "https://bestclimate-avito-bridge-live-production.up.railway.app/feeds/avito/aqua-vladimir-recovery.xml"
 TARGETS = {
     7556388793: {
-        "price": 79990,
+        "price": 65400,
         "ad_id": "BC-7556388793-OPTIMIZED",
         "label": "flagship",
     },
