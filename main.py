@@ -21,6 +21,7 @@ if "LEAD_TELEGRAM_BOT_TOKEN" in os.environ:
     )
 
 from app import AVITO_API_BASE, _account_id, _avito_get, _count_items, _get_token, app
+from autoload_admin import register_autoload_admin
 from autoload_category_probe import register_autoload_category_probe
 from autoload_target_probe import register_autoload_target_probe
 from campaign_probe import register_campaign_probe
@@ -69,6 +70,7 @@ lead_funnel._telegram_api = _telegram_api_with_diag
 lead_router = lead_funnel.router
 
 register_readonly_diagnostic(app, _avito_get, _count_items, _account_id)
+register_autoload_admin(app, _avito_get, _get_token, AVITO_API_BASE)
 register_campaign_probe(app, _avito_get)
 register_feed_server(app)
 register_recovery(app, _avito_get, _get_token, AVITO_API_BASE)
