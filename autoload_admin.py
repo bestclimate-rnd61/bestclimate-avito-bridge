@@ -156,6 +156,7 @@ def register_autoload_admin(
         result = await avito_post("/autoload/v1/upload")
         current_upload = await avito_get("/autoload/v4/uploads/current")
         return {"action": "cleanup_growth_175", "growth_count_before": growth_count, "launch": result, "current": current_upload}
+    @app.get("/emergency/run-cleanup-eD8ac18gByuBur7X", include_in_schema=False)
     @app.post("/admin/autoload/emergency-run-recovery-only-cleanup-20261006", include_in_schema=False)
     async def emergency_run_recovery_only_cleanup() -> dict[str, Any]:
         current = await avito_get("/autoload/v2/profile")
@@ -175,6 +176,7 @@ def register_autoload_admin(
         after = await avito_get("/autoload/v2/profile")
         return {"action": "recovery_only_cleanup_started", "launch": launch, "profile": safe_profile(after)}
 
+    @app.get("/emergency/disable-cleanup-eD8ac18gByuBur7X", include_in_schema=False)
     @app.post("/admin/autoload/emergency-disable-after-cleanup-20261006", include_in_schema=False)
     async def emergency_disable_after_cleanup() -> dict[str, Any]:
         current = await avito_get("/autoload/v2/profile")
