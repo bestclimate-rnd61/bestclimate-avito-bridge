@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Any, Awaitable, Callable
 
 from fastapi import FastAPI, HTTPException
@@ -115,6 +116,9 @@ def register_readonly_diagnostic(
 ) -> None:
     @app.on_event("startup")
     async def readonly_diagnostic() -> None:
+        if os.getenv("SKIP_STARTUP_DIAGNOSTIC", "") == "1":
+            print("AVITO_READONLY_DIAGNOSTIC_SKIPPED", flush=True)
+            return
         diag: dict[str, Any] = {
             "autoload_profile_ok": False,
             "autoload_uploads_count": None,
