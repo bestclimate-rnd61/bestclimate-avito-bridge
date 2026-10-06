@@ -109,6 +109,21 @@ def register_autoload_admin(
             [{"feed_name": "recovery-live", "feed_url": RECOVERY_URL}],
         )
 
+    @app.post("/admin/autoload/emergency-stop-growth-175-20261006", include_in_schema=False)
+    async def emergency_stop_growth_175() -> dict[str, Any]:
+        current = await avito_get("/autoload/v2/profile")
+        if not isinstance(current, dict) or not current.get("report_email"):
+            raise HTTPException(status_code=502, detail="Current autoload profile is invalid")
+        feeds = current.get("feeds_data") if isinstance(current.get("feeds_data"), list) else []
+        body = {
+            "autoload_enabled": False,
+            "report_email": current["report_email"],
+            "schedule": current.get("schedule") or [],
+            "feeds_data": feeds,
+        }
+        await avito_post("/autoload/v2/profile", body)
+        after = await avito_get("/autoload/v2/profile")
+        return {"action": "emergency_stop_growth_175", "after": safe_profile(after)}
     @app.post("/admin/autoload/launch", include_in_schema=False)
     async def launch_upload(
         x_autoload_admin_key: str | None = Header(default=None, alias="X-Autoload-Admin-Key"),
