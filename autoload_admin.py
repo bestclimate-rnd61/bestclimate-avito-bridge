@@ -124,6 +124,24 @@ def register_autoload_admin(
         await avito_post("/autoload/v2/profile", body)
         after = await avito_get("/autoload/v2/profile")
         return {"action": "emergency_stop_growth_175", "after": safe_profile(after)}
+
+    @app.post("/admin/autoload/emergency-cleanup-growth-175-20261006", include_in_schema=False)
+    async def emergency_cleanup_growth_175() -> dict[str, Any]:
+        current = await avito_get("/autoload/v2/profile")
+        safe = safe_profile(current)
+        if safe.get("autoload_enabled") is not False:
+            raise HTTPException(status_code=409, detail={"reason": "autoload must be disabled", "profile": safe})
+        urls = safe.get("feed_urls") or []
+        if urls != [RECOVERY_URL]:
+            raise HTTPException(status_code=409, detail={"reason": "recovery-only profile required", "profile": safe})
+        before_items = await avito_get("/autoload/v4/uploads/current/items", params={"page": 1, "perPage": 200})
+        rows = before_items if isinstance(before_items, list) else (before_items.get("items") if isinstance(before_items, dict) else [])
+        growth_count = sum(1 for row in (rows or []) if isinstance(row, dict) and str(row.get("ad_id") or row.get("id") or "").startswith("BC-GROWTH-"))
+        if growth_count != 175:
+            raise HTTPException(status_code=409, detail={"reason": "expected 175 growth items in current report", "growth_count": growth_count})
+        result = await avito_post("/autoload/v1/upload")
+        current_upload = await avito_get("/autoload/v4/uploads/current")
+        return {"action": "cleanup_growth_175", "growth_count_before": growth_count, "launch": result, "current": current_upload}
     @app.post("/admin/autoload/launch", include_in_schema=False)
     async def launch_upload(
         x_autoload_admin_key: str | None = Header(default=None, alias="X-Autoload-Admin-Key"),
