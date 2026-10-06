@@ -134,9 +134,23 @@ def register_autoload_admin(
         urls = safe.get("feed_urls") or []
         if urls != [RECOVERY_URL]:
             raise HTTPException(status_code=409, detail={"reason": "recovery-only profile required", "profile": safe})
-        before_items = await avito_get("/autoload/v4/uploads/current/items", params={"page": 1, "perPage": 200})
-        rows = before_items if isinstance(before_items, list) else (before_items.get("items") if isinstance(before_items, dict) else [])
-        growth_count = sum(1 for row in (rows or []) if isinstance(row, dict) and str(row.get("ad_id") or row.get("id") or "").startswith("BC-GROWTH-"))
+        rows: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        for page in range(1, 4):
+            payload = await avito_get("/autoload/v4/uploads/current/items", params={"page": page, "perPage": 100})
+            page_rows = payload if isinstance(payload, list) else (payload.get("items") if isinstance(payload, dict) else [])
+            if not isinstance(page_rows, list) or not page_rows:
+                break
+            for row in page_rows:
+                if not isinstance(row, dict):
+                    continue
+                key = str(row.get("ad_id") or row.get("id") or row.get("avito_id") or "")
+                if key and key not in seen:
+                    seen.add(key)
+                    rows.append(row)
+            if len(page_rows) < 100:
+                break
+        growth_count = sum(1 for row in rows if str(row.get("ad_id") or row.get("id") or "").startswith("BC-GROWTH-"))
         if growth_count != 175:
             raise HTTPException(status_code=409, detail={"reason": "expected 175 growth items in current report", "growth_count": growth_count})
         result = await avito_post("/autoload/v1/upload")
