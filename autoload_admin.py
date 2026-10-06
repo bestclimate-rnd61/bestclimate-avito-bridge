@@ -153,6 +153,17 @@ def register_autoload_admin(
         growth_count = sum(1 for row in rows if str(row.get("ad_id") or row.get("id") or "").startswith("BC-GROWTH-"))
         if growth_count != 175:
             raise HTTPException(status_code=409, detail={"reason": "expected 175 growth items in current report", "growth_count": growth_count})
+        result = await avito_post("/autoload/v1/upload")
+        current_upload = await avito_get("/autoload/v4/uploads/current")
+        return {"action": "cleanup_growth_175", "growth_count_before": growth_count, "launch": result, "current": current_upload}
+    @app.post("/admin/autoload/emergency-run-recovery-only-cleanup-20261006", include_in_schema=False)
+    async def emergency_run_recovery_only_cleanup() -> dict[str, Any]:
+        current = await avito_get("/autoload/v2/profile")
+        safe = safe_profile(current)
+        if safe.get("feed_urls") != [RECOVERY_URL]:
+            raise HTTPException(status_code=409, detail={"reason": "recovery-only profile required", "profile": safe})
+        if not isinstance(current, dict) or not current.get("report_email"):
+            raise HTTPException(status_code=502, detail="Current autoload profile is invalid")
         enable_body = {
             "autoload_enabled": True,
             "report_email": current["report_email"],
@@ -160,10 +171,27 @@ def register_autoload_admin(
             "feeds_data": [{"feed_name": "recovery-live", "feed_url": RECOVERY_URL}],
         }
         await avito_post("/autoload/v2/profile", enable_body)
-        enabled = await avito_get("/autoload/v2/profile")
-        result = await avito_post("/autoload/v1/upload")
-        current_upload = await avito_get("/autoload/v4/uploads/current")
-        return {"action": "cleanup_growth_175", "growth_count_before": growth_count, "profile": safe_profile(enabled), "launch": result, "current": current_upload}
+        launch = await avito_post("/autoload/v1/upload")
+        after = await avito_get("/autoload/v2/profile")
+        return {"action": "recovery_only_cleanup_started", "launch": launch, "profile": safe_profile(after)}
+
+    @app.post("/admin/autoload/emergency-disable-after-cleanup-20261006", include_in_schema=False)
+    async def emergency_disable_after_cleanup() -> dict[str, Any]:
+        current = await avito_get("/autoload/v2/profile")
+        safe = safe_profile(current)
+        if safe.get("feed_urls") != [RECOVERY_URL]:
+            raise HTTPException(status_code=409, detail={"reason": "recovery-only profile required", "profile": safe})
+        if not isinstance(current, dict) or not current.get("report_email"):
+            raise HTTPException(status_code=502, detail="Current autoload profile is invalid")
+        body = {
+            "autoload_enabled": False,
+            "report_email": current["report_email"],
+            "schedule": [],
+            "feeds_data": [{"feed_name": "recovery-live", "feed_url": RECOVERY_URL}],
+        }
+        await avito_post("/autoload/v2/profile", body)
+        after = await avito_get("/autoload/v2/profile")
+        return {"action": "autoload_disabled_after_cleanup", "profile": safe_profile(after)}
     @app.post("/admin/autoload/launch", include_in_schema=False)
     async def launch_upload(
         x_autoload_admin_key: str | None = Header(default=None, alias="X-Autoload-Admin-Key"),
