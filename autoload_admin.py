@@ -7,6 +7,7 @@ import httpx
 from fastapi import FastAPI, Header, HTTPException
 
 GROWTH_175_URL = "https://bestclimate-avito-bridge-live-production.up.railway.app/feeds/avito/growth-175.xml"
+RECOVERY_URL = "https://bestclimate-avito-bridge-live-production.up.railway.app/feeds/avito/aqua-vladimir-recovery.xml"
 
 
 def register_autoload_admin(
@@ -17,11 +18,7 @@ def register_autoload_admin(
 ) -> None:
     def require_admin(x_autoload_admin_key: str | None) -> None:
         expected = os.getenv("AUTOLOAD_ADMIN_KEY", "")
-        if (
-            not expected
-            or not x_autoload_admin_key
-            or not secrets.compare_digest(x_autoload_admin_key, expected)
-        ):
+        if not expected or not x_autoload_admin_key or not secrets.compare_digest(x_autoload_admin_key, expected):
             raise HTTPException(status_code=401, detail="Unauthorized")
 
     async def avito_post(path: str, payload: dict[str, Any] | None = None) -> Any:
@@ -66,6 +63,19 @@ def register_autoload_admin(
             "report_email_present": bool(profile.get("report_email")),
         }
 
+    async def update_profile(current: dict[str, Any], feeds_data: list[dict[str, str]]) -> dict[str, Any]:
+        if not current.get("report_email"):
+            raise HTTPException(status_code=502, detail="Current autoload profile is incomplete")
+        body = {
+            "autoload_enabled": bool(current.get("autoload_enabled", True)),
+            "report_email": current["report_email"],
+            "schedule": current.get("schedule") or [],
+            "feeds_data": feeds_data,
+        }
+        await avito_post("/autoload/v2/profile", body)
+        after = await avito_get("/autoload/v2/profile")
+        return {"before": safe_profile(current), "after": safe_profile(after)}
+
     @app.get("/admin/autoload/profile-safe", include_in_schema=False)
     async def profile_safe() -> dict[str, Any]:
         return safe_profile(await avito_get("/autoload/v2/profile"))
@@ -76,22 +86,28 @@ def register_autoload_admin(
     ) -> dict[str, Any]:
         require_admin(x_autoload_admin_key)
         current = await avito_get("/autoload/v2/profile")
-        if not isinstance(current, dict) or not current.get("report_email"):
-            raise HTTPException(status_code=502, detail="Current autoload profile is incomplete")
-        body = {
-            "autoload_enabled": bool(current.get("autoload_enabled", True)),
-            "report_email": current["report_email"],
-            "schedule": current.get("schedule") or [],
-            "feeds_data": [
-                {
-                    "feed_name": "growth-175-20261006",
-                    "feed_url": GROWTH_175_URL,
-                }
+        if not isinstance(current, dict):
+            raise HTTPException(status_code=502, detail="Current autoload profile is invalid")
+        return await update_profile(
+            current,
+            [
+                {"feed_name": "recovery-live", "feed_url": RECOVERY_URL},
+                {"feed_name": "growth-175-20261006", "feed_url": GROWTH_175_URL},
             ],
-        }
-        await avito_post("/autoload/v2/profile", body)
-        after = await avito_get("/autoload/v2/profile")
-        return {"before": safe_profile(current), "after": safe_profile(after)}
+        )
+
+    @app.post("/admin/autoload/rollback-recovery", include_in_schema=False)
+    async def rollback_recovery(
+        x_autoload_admin_key: str | None = Header(default=None, alias="X-Autoload-Admin-Key"),
+    ) -> dict[str, Any]:
+        require_admin(x_autoload_admin_key)
+        current = await avito_get("/autoload/v2/profile")
+        if not isinstance(current, dict):
+            raise HTTPException(status_code=502, detail="Current autoload profile is invalid")
+        return await update_profile(
+            current,
+            [{"feed_name": "recovery-live", "feed_url": RECOVERY_URL}],
+        )
 
     @app.post("/admin/autoload/launch", include_in_schema=False)
     async def launch_upload(
@@ -100,11 +116,8 @@ def register_autoload_admin(
         require_admin(x_autoload_admin_key)
         profile = await avito_get("/autoload/v2/profile")
         safe = safe_profile(profile)
-        if safe.get("feed_urls") != [GROWTH_175_URL]:
-            raise HTTPException(
-                status_code=409,
-                detail={"reason": "growth feed is not active", "profile": safe},
-            )
+        if GROWTH_175_URL not in (safe.get("feed_urls") or []):
+            raise HTTPException(status_code=409, detail={"reason": "growth feed is not active", "profile": safe})
         result = await avito_post("/autoload/v1/upload")
         current = await avito_get("/autoload/v4/uploads/current")
         current_safe: dict[str, Any] = {}
