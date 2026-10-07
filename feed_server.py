@@ -8,6 +8,7 @@ from fastapi import FastAPI, HTTPException, Response
 HAIER_FEED_PATH = Path(__file__).with_name("avito_feed_batch_01_haier.xml")
 AQUA_VLADIMIR_RECOVERY_FEED_PATH = Path(__file__).with_name("avito_feed_aqua_vladimir_recovery.xml")
 AVITO_GROWTH_175_FEED_PATH = Path(__file__).with_name("avito_growth_175_staging.xml")
+AVITO_GROWTH_V3_FEED_PATH = Path(__file__).with_name("avito_growth_v3_wave1.xml")
 AQUA_VLADIMIR_IMAGE_B64_PATH = Path(__file__).with_name("aqua_vladimir_main_sq400_q15.b64")
 
 
@@ -48,6 +49,10 @@ def register_feed_server(app: FastAPI) -> None:
     @app.get("/feeds/avito/growth-175.xml", include_in_schema=False)
     async def growth_175_feed() -> Response:
         return _xml_response(AVITO_GROWTH_175_FEED_PATH)
+
+    @app.get("/feeds/avito/growth-v3.xml", include_in_schema=False)
+    async def growth_v3_feed() -> Response:
+        return _xml_response(AVITO_GROWTH_V3_FEED_PATH)
 
     @app.get("/feeds/avito/growth.xml", include_in_schema=False)
     async def growth_feed() -> Response:

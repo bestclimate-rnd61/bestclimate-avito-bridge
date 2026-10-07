@@ -6,7 +6,7 @@ from typing import Any, Awaitable, Callable
 import httpx
 from fastapi import FastAPI
 
-GROWTH_V3_URL = "https://bestclimate-avito-bridge-live-production.up.railway.app/feeds/avito/growth.xml"
+GROWTH_V3_URL = "https://bestclimate-avito-bridge-live-production.up.railway.app/feeds/avito/growth-v3.xml"
 
 async def _post_avito(api_base: str, get_token: Callable[..., Awaitable[str]], path: str, body: dict[str, Any] | None = None) -> tuple[int, Any]:
     token = await get_token()
