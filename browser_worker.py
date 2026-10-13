@@ -12,6 +12,8 @@ ALLOWED_HOSTS = frozenset({
 })
 READ_ACTIONS = frozenset({"inspect_title", "inspect_text"})
 WRITE_ACTIONS = frozenset({"fill", "click", "upload", "publish"})
+# Writes are opt-in per service and task, not a blanket read-only architecture.
+# A service-specific executor must implement each action and verify the result.
 
 def validate_request(payload):
     if not isinstance(payload, dict):
@@ -28,11 +30,18 @@ def validate_request(payload):
     if url.hostname not in ALLOWED_HOSTS:
         raise ValueError("host not allowlisted")
     if action in WRITE_ACTIONS:
-        raise PermissionError("browser writes disabled until audited authorization")
+        if not payload.get("authorized_write"):
+            raise PermissionError("explicit authorized_write required")
+        if not isinstance(payload.get("task_id"), str) or not payload["task_id"].strip():
+            raise ValueError("write requires durable task_id")
+        if action == "publish" and not payload.get("publish_approved"):
+            raise PermissionError("publish approval required")
     return {"action": action, "url": raw}
 
 def execute(payload):
     request = validate_request(payload)
+    if request["action"] in WRITE_ACTIONS:
+        raise NotImplementedError("write adapter not yet implemented; never report success")
     try:
         from playwright.sync_api import sync_playwright
     except ImportError as exc:
