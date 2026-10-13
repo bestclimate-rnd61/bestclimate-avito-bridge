@@ -7,6 +7,11 @@ import uuid
 from datetime import datetime, timezone
 
 DB_PATH = os.getenv("TASK_DB_PATH", "/data/tasks.sqlite3")
+# Refuse ephemeral storage in production unless explicitly overridden.
+def validate_storage():
+    if os.getenv("RAILWAY_ENVIRONMENT") and not os.getenv("TASK_ALLOW_EPHEMERAL"):
+        if not os.path.ismount(os.path.dirname(os.path.abspath(DB_PATH))):
+            raise RuntimeError("Persistent queue volume not mounted; worker not started")
 ROLES = {"catalog", "listing", "sales", "growth", "quality", "watchdog"}
 MAX_ATTEMPTS = 5
 
@@ -76,6 +81,7 @@ def execute(role, payload):
     return {"role": role, "status": "planned", "input": payload}
 
 def run():
+    validate_storage()
     db = connect()
     while True:
         task = claim(db)
