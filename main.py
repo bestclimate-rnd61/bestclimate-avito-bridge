@@ -136,3 +136,7 @@ async def highlight_media_head(slug: str):
             "Content-Length": str(len(content)),
         },
     )
+
+# Isolated, authenticated queue; disabled unless AGENT_QUEUE_ENABLED=1.
+from agent_queue_api import register as register_agent_queue
+register_agent_queue(app)
