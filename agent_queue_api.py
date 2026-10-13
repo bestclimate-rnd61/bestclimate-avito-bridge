@@ -30,7 +30,10 @@ def submit_task(body: TaskRequest, x_bridge_secret: str | None = Header(default=
     if body.role not in ROLES or body.payload.get("action") not in {"plan", "bulk_edit", "bulk_publish"}:
         raise HTTPException(400, "unsupported role or action")
     with connect() as db:
-        task_id = enqueue(db, body.role, body.payload, body.task_id)
+        payload = dict(body.payload)
+        task_id = body.task_id or __import__("uuid").uuid4().hex
+        payload["task_id"] = task_id
+        task_id = enqueue(db, body.role, payload, task_id)
     return {"id": task_id, "state": "queued"}
 
 @router.get("/status")
