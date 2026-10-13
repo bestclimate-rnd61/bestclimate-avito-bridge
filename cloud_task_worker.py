@@ -75,10 +75,34 @@ def finish(db, task_id, result, error=False):
     return True
 
 def execute(role, payload):
-    # Read-only planning only. External actions require explicit reviewed adapters.
-    if payload.get("action") != "plan":
-        raise ValueError("unsafe or unsupported action; no external writes permitted")
-    return {"role": role, "status": "planned", "input": payload}
+    action = payload.get("action")
+    if action == "plan":
+        return {"role": role, "status": "planned", "input": payload}
+    if action not in {"bulk_edit", "bulk_publish"} or role not in {"catalog", "listing", "growth"}:
+        raise ValueError("unsupported action")
+    items = payload.get("items")
+    if not isinstance(items, list) or not 1 <= len(items) <= 100:
+        raise ValueError("items must be a nonempty list of at most 100")
+    protected = {"8341283876"}
+    seen = set()
+    for item in items:
+        if not isinstance(item, dict):
+            raise ValueError("item must be object")
+        item_id = str(item.get("id", ""))
+        if not item_id or item_id in seen or item_id in protected:
+            raise ValueError("missing, duplicate, or protected item id")
+        seen.add(item_id)
+        if not isinstance(item.get("title"), str) or not item["title"].strip():
+            raise ValueError("verified title required")
+        if not isinstance(item.get("price"), int) or item["price"] <= 0:
+            raise ValueError("verified positive price required")
+        if item.get("paid_promotion") or item.get("delete"):
+            raise ValueError("paid promotion and deletion prohibited")
+    # Approval is for preparing drafts, not for writing to Avito.
+    # An external adapter must be implemented and verified separately.
+    return {"role": role, "action": action, "status": "validated_draft",
+            "item_count": len(items), "item_ids": sorted(seen),
+            "external_writes": 0}
 
 def run():
     validate_storage()
