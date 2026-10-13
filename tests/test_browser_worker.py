@@ -21,6 +21,18 @@ class BrowserWorkerValidationTests(unittest.TestCase):
         with self.assertRaises(PermissionError):
             validate_request({"action":"publish","url":"https://www.avito.ru/profile"})
 
+    def test_write_requires_task_id(self):
+        with self.assertRaises(ValueError):
+            validate_request({"action":"fill","url":"https://www.avito.ru/profile","authorized_write":True})
+
+    def test_publish_requires_approval(self):
+        with self.assertRaises(PermissionError):
+            validate_request({"action":"publish","url":"https://www.avito.ru/profile","authorized_write":True,"task_id":"task-123"})
+
+    def test_authorized_edit_request(self):
+        request = validate_request({"action":"fill","url":"https://www.avito.ru/profile","authorized_write":True,"task_id":"task-123"})
+        self.assertEqual(request["action"],"fill")
+
     def test_block_arbitrary_action(self):
         with self.assertRaises(ValueError):
             validate_request({"action":"execute_js","url":"https://www.avito.ru/profile"})
