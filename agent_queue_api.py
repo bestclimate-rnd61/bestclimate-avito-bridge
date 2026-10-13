@@ -82,3 +82,12 @@ def register(app):
         with connect() as db:
             enqueue(db, "watchdog", {"action": "plan", "check": "persistent_queue_smoke"}, "startup-smoke-v1")
         print("AGENT_QUEUE_STARTED", flush=True)
+        from avito_draft_store import stage
+        from pathlib import Path
+        import xml.etree.ElementTree as ET
+        probe = stage("storage-probe", "bulk_edit", [{"id":"BC-STORAGE-PROBE","title":"Storage test only","price":1}])
+        path = Path(probe["path"])
+        assert ET.parse(path).getroot().tag == "Ads"
+        path.unlink(missing_ok=True)
+        path.with_suffix(".json").unlink(missing_ok=True)
+        print("AVITO_XML_STORAGE_OK", flush=True)
