@@ -27,8 +27,8 @@ def require_auth(key):
 @router.post("/tasks")
 def submit_task(body: TaskRequest, x_bridge_secret: str | None = Header(default=None)):
     require_auth(x_bridge_secret)
-    if body.role not in ROLES or body.payload.get("action") != "plan":
-        raise HTTPException(400, "only safe planning tasks are currently enabled")
+    if body.role not in ROLES or body.payload.get("action") not in {"plan", "bulk_edit", "bulk_publish"}:
+        raise HTTPException(400, "unsupported role or action")
     with connect() as db:
         task_id = enqueue(db, body.role, body.payload, body.task_id)
     return {"id": task_id, "state": "queued"}
