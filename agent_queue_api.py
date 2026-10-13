@@ -49,6 +49,8 @@ def _loop():
                 task_id, role, raw, _ = task
                 try:
                     finish(db, task_id, execute(role, json.loads(raw)))
+                    if task_id.startswith("startup-smoke-"):
+                        print("AGENT_QUEUE_SMOKE_DONE", task_id, flush=True)
                 except Exception as exc:
                     finish(db, task_id, {"error": type(exc).__name__}, error=True)
             else:
@@ -74,4 +76,6 @@ def register(app):
             print("AGENT_QUEUE_DISABLED", flush=True)
             return
         start_worker()
+        with connect() as db:
+            enqueue(db, "watchdog", {"action": "plan", "check": "persistent_queue_smoke"}, "startup-smoke-v1")
         print("AGENT_QUEUE_STARTED", flush=True)
