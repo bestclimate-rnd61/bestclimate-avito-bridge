@@ -419,3 +419,27 @@ async def avito_autoload_v4_last_successful_items(
 async def avito_ping() -> dict[str, Any]:
     profile = await _avito_get("/core/v1/accounts/self")
     return {"ok": True, "profile": profile}
+
+
+# Read-only, redacted provider status for the four existing Avito autoload IDs.
+# Does not expose account credentials, phone numbers, listing descriptions or prices.
+@app.get("/admin/autoload/live-visibility-safe", include_in_schema=False)
+async def avito_live_visibility_safe() -> dict[str, Any]:
+    ids = (7556388793, 8324765982, 8525745722, 8405476022)
+    account_id = await _account_id()
+    results = []
+    for item_id in ids:
+        try:
+            payload = await _avito_get(f"/core/v1/accounts/{account_id}/items/{item_id}/")
+            if not isinstance(payload, dict):
+                results.append({"avito_id": item_id, "result": "unexpected_response"})
+                continue
+            result = {"avito_id": item_id, "result": "found"}
+            for key in ("status", "state", "is_active", "blocked", "removed"):
+                value = payload.get(key)
+                if isinstance(value, (str, bool, int)):
+                    result[key] = value
+            results.append(result)
+        except HTTPException as exc:
+            results.append({"avito_id": item_id, "result": "api_error", "http_status": exc.status_code})
+    return {"count": len(results), "items": results}
