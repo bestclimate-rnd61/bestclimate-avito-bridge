@@ -98,11 +98,10 @@ def execute(role, payload):
             raise ValueError("verified positive price required")
         if item.get("paid_promotion") or item.get("delete"):
             raise ValueError("paid promotion and deletion prohibited")
-    # Approval is for preparing drafts, not for writing to Avito.
-    # An external adapter must be implemented and verified separately.
-    return {"role": role, "action": action, "status": "validated_draft",
-            "item_count": len(items), "item_ids": sorted(seen),
-            "external_writes": 0}
+    from avito_draft_store import stage
+    saved = stage(payload.get("task_id") or str(uuid.uuid4()), action, items)
+    return {"role": role, "action": action, "item_ids": sorted(seen),
+            "external_writes": 0, **saved}
 
 def run():
     validate_storage()
