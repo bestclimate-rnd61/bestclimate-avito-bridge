@@ -14,6 +14,24 @@ HOSTS = frozenset({"bestclimate-rnd.ru", "www.bestclimate-rnd.ru"})
 MAX_BYTES = 1024 * 1024
 
 
+def _unambiguous_object(pairs):
+    """JSON-LD duplicate keys must never choose a price/stock by order."""
+    value = {}
+    for key, child in pairs:
+        if key in value:
+            raise ValueError("product_structured_data_ambiguous")
+        value[key] = child
+    return value
+
+
+def _microdata_field(scope, prop, value):
+    # Equivalent repeated markup is common; differing facts in one scope are
+    # ambiguous, even if the final value happens to look like a valid offer.
+    if prop in scope and scope[prop] != value:
+        raise ValueError("product_microdata_conflict")
+    scope[prop] = value
+
+
 class NoRedirects(HTTPRedirectHandler):
     def redirect_request(self, *args, **kwargs):
         return None
@@ -48,7 +66,7 @@ class StructuredData(HTMLParser):
         if tag.lower() == "script" and self.reading:
             self.reading = False
             try:
-                self.documents.append(json.loads("".join(self.parts)))
+                self.documents.append(json.loads("".join(self.parts), object_pairs_hook=_unambiguous_object))
             except (ValueError, TypeError):
                 raise ValueError("product_structured_data_invalid") from None
 
@@ -82,7 +100,7 @@ class Microdata(HTMLParser):
         if scope is not None and prop in ("name", "price", "priceCurrency", "availability", "url"):
             value = attrs.get("content", attrs.get("href"))
             if value is not None:
-                scope[prop] = value
+                _microdata_field(scope, prop, value)
             else:
                 capture = {"scope": scope, "prop": prop, "parts": []}
         if tag not in self.VOID:
@@ -106,7 +124,7 @@ class Microdata(HTMLParser):
         for entry in closed:
             capture = entry["capture"]
             if capture:
-                capture["scope"][capture["prop"]] = "".join(capture["parts"]).strip()
+                _microdata_field(capture["scope"], capture["prop"], "".join(capture["parts"]).strip())
 
 
 def _products(value):
