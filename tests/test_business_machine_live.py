@@ -15,7 +15,8 @@ URL = "https://bestclimate-rnd.ru/isolated-fixture-product/"
 def document(**offer_changes):
     offer = {"@type": "Offer", "price": "143900", "priceCurrency": "RUB",
              "availability": "https://schema.org/InStock", **offer_changes}
-    value = {"@context": "https://schema.org", "@type": "Product", "name": "Fixture product", "offers": offer}
+    value = {"@context": "https://schema.org", "@type": "Product", "url": URL,
+             "name": "Fixture product", "offers": offer}
     return ('<script type="application/ld+json">' + json.dumps(value) + '</script>').encode()
 
 
@@ -47,6 +48,24 @@ class ProductTests(unittest.TestCase):
         self.assertEqual(value["item"]["price"], 21490)
         self.assertEqual(value["item"]["title"], "Actual storefront product")
         self.assertEqual(value["evidence"]["source"], "public_webasyst_product_microdata")
+
+    def test_related_jsonld_never_overrides_explicit_main_product(self):
+        main = b'''<div id="js-product-page" itemscope itemtype="https://schema.org/Product">
+        <meta itemprop="name" content="Actual main product"><div itemscope itemtype="https://schema.org/Offer">
+        <meta itemprop="price" content="143900"><meta itemprop="priceCurrency" content="RUB">
+        <link itemprop="availability" href="https://schema.org/InStock"></div></div>'''
+        related = document(price=1).replace(URL.encode(), b"https://bestclimate-rnd.ru/different-product/")
+        value = observed_product(URL, main + related)
+        self.assertEqual(value["item"]["title"], "Actual main product")
+        self.assertEqual(value["item"]["price"], 143900)
+        with self.assertRaisesRegex(ValueError, "product_sources_conflict"):
+            observed_product(URL, main + document(price=1))
+
+    def test_unbound_or_different_product_jsonld_cannot_verify_requested_page(self):
+        for body in (document().replace(URL.encode(), b"https://bestclimate-rnd.ru/related/"),
+                     document().replace(('"url": "' + URL + '", ').encode(), b"")):
+            with self.assertRaisesRegex(ValueError, "product_identity_ambiguous"):
+                observed_product(URL, body)
 
     def test_unavailable_stock_and_ambiguous_offer_are_rejected(self):
         for availability in (None, "OutOfStock", "https://schema.org/PreOrder", "https://schema.org/OutOfStock"):

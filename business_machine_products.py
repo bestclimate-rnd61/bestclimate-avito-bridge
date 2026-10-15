@@ -6,7 +6,7 @@ import json
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from html.parser import HTMLParser
-from urllib.parse import urlsplit
+from urllib.parse import urljoin, urlsplit
 from urllib.request import Request, build_opener, HTTPSHandler, HTTPRedirectHandler
 import ssl
 
@@ -79,7 +79,7 @@ class Microdata(HTMLParser):
             scope = created
         prop = attrs.get("itemprop")
         capture = None
-        if scope is not None and prop in ("name", "price", "priceCurrency", "availability"):
+        if scope is not None and prop in ("name", "price", "priceCurrency", "availability", "url"):
             value = attrs.get("content", attrs.get("href"))
             if value is not None:
                 scope[prop] = value
@@ -121,26 +121,7 @@ def _products(value):
             yield from _products(value["@graph"])
 
 
-def observed_product(url, body, *, now=None):
-    product_url(url)
-    if not isinstance(body, bytes) or len(body) > MAX_BYTES:
-        raise ValueError("product_response_too_large")
-    parser = StructuredData()
-    try:
-        parser.feed(body.decode("utf-8"))
-    except UnicodeDecodeError:
-        raise ValueError("product_encoding_invalid") from None
-    products = list(_products(parser.documents))
-    source = "public_webasyst_product_jsonld"
-    if not products:
-        microdata = Microdata()
-        microdata.feed(body.decode("utf-8"))
-        main = [value for value in microdata.products if value.pop("_main", False)]
-        products = main if main else microdata.products
-        source = "public_webasyst_product_microdata"
-    if len(products) != 1:
-        raise ValueError("product_identity_ambiguous")
-    product = products[0]
+def _fields(product):
     name, offers = product.get("name"), product.get("offers")
     if not isinstance(name, str) or not 1 <= len(name.strip()) <= 150:
         raise ValueError("product_title_invalid")
@@ -159,10 +140,64 @@ def observed_product(url, body, *, now=None):
     availability = offers.get("availability")
     if availability not in ("https://schema.org/InStock", "http://schema.org/InStock"):
         raise ValueError("product_stock_not_confirmed")
+    return name.strip(), int(price)
+
+
+def _matches_url(product, requested):
+    identity = product.get("url") or product.get("@id")
+    if isinstance(identity, dict):
+        identity = identity.get("@id")
+    if not isinstance(identity, str) or len(identity) > 1600:
+        return False
+    try:
+        candidate = urlsplit(urljoin(requested, identity))
+        expected = urlsplit(requested)
+        return (candidate.scheme in ("https", "http") and candidate.hostname in HOSTS
+                and candidate.port in (None, 80, 443) and not candidate.query
+                and not candidate.username and not candidate.password
+                and candidate.path.rstrip("/") == expected.path.rstrip("/"))
+    except ValueError:
+        return False
+
+
+def observed_product(url, body, *, now=None):
+    product_url(url)
+    if not isinstance(body, bytes) or len(body) > MAX_BYTES:
+        raise ValueError("product_response_too_large")
+    parser, microdata = StructuredData(), Microdata()
+    try:
+        html = body.decode("utf-8")
+        parser.feed(html)
+        microdata.feed(html)
+    except UnicodeDecodeError:
+        raise ValueError("product_encoding_invalid") from None
+    structured = list(_products(parser.documents))
+    matching = [value for value in structured if _matches_url(value, url)]
+    main = [value for value in microdata.products if value.pop("_main", False)]
+    if len(main) > 1 or len(matching) > 1:
+        raise ValueError("product_identity_ambiguous")
+    if main:
+        # Webasyst explicitly scopes its main product. Related-card JSON-LD can
+        # never replace that object. Conflicting data for the same URL blocks.
+        product = main[0]
+        source = "public_webasyst_product_microdata"
+        fields = _fields(product)
+        if matching and _fields(matching[0]) != fields:
+            raise ValueError("product_sources_conflict")
+    elif matching:
+        product, source = matching[0], "public_webasyst_product_jsonld"
+        fields = _fields(product)
+    else:
+        candidates = [value for value in microdata.products if _matches_url(value, url)]
+        if len(candidates) != 1:
+            raise ValueError("product_identity_ambiguous")
+        product, source = candidates[0], "public_webasyst_product_microdata"
+        fields = _fields(product)
+    name, price = fields
     # Stock is only the site's observation; no quantity is invented. It must be
     # rechecked before any later publisher is enabled.
     return {"item": {"id": "BC-" + hashlib.sha256(url.encode()).hexdigest()[:24],
-                     "title": name.strip(), "price": int(price)},
+                     "title": name, "price": price},
             "evidence": {"source_url": url, "source_sha256": hashlib.sha256(body).hexdigest(),
                          "observed_at": (now or datetime.now(timezone.utc)).isoformat(),
                          "currency": "RUB", "availability": "InStock", "stock_quantity": None,
