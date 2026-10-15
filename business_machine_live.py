@@ -97,7 +97,10 @@ class LiveDraftAdapter:
         # the exact observed prices/title remain included. A changed price never
         # silently overwrites a committed attempt.
         result, artifacts = self.drafts.execute(normalized, ensure_lease)
-        result.update({"products_verified": True, "product_evidence": [value["evidence"] for value in observed],
+        result.update({"products_verified": True, "product_evidence": [
+                           {**value["evidence"], "item_id": value["item"]["id"],
+                            "title": value["item"]["title"], "price_rub": value["item"]["price"]}
+                           for value in observed],
                        "publication_status": "blocked", "publication_blocker": "PUBLICATION_SCOPE_NOT_VERIFIED"})
         return result, artifacts
 

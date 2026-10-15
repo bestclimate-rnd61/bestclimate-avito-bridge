@@ -22,6 +22,13 @@ from datetime import datetime
 from business_machine_adapter import DraftAdapter
 
 LOG = logging.getLogger("business_machine_worker")
+SAFE_DRAFT_ERROR_CODES = frozenset({
+    "action_not_allowed", "invalid_payload", "missing_job_identity", "artifact_conflict", "artifact_integrity_error",
+    "invalid_product_urls", "invalid_product_url", "product_response_too_large", "product_structured_data_invalid",
+    "product_encoding_invalid", "product_identity_ambiguous", "product_title_invalid", "product_offer_ambiguous",
+    "product_currency_invalid", "product_price_invalid", "product_stock_not_confirmed", "product_sources_conflict",
+    "product_http_error",
+})
 
 
 class APIError(Exception):
@@ -259,8 +266,7 @@ class BusinessMachineWorker:
             self._terminal(guard, "fail", {"errorCode": "WORKER_STOPPING", "retryable": True,
                                            "retryAfterSeconds": 1})
         except ValueError as exc:
-            code = str(exc) if str(exc) in {"action_not_allowed", "invalid_payload", "missing_job_identity",
-                                            "artifact_conflict", "artifact_integrity_error"} else "invalid_draft_input"
+            code = str(exc) if str(exc) in SAFE_DRAFT_ERROR_CODES else "invalid_draft_input"
             self._terminal(guard, "fail", {"errorCode": code.upper(), "retryable": False})
         except OSError:
             self._terminal(guard, "fail", {"errorCode": "ARTIFACT_IO_ERROR", "retryable": True,

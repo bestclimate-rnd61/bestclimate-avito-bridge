@@ -111,6 +111,9 @@ class LiveAdapterTests(unittest.TestCase):
         self.assertEqual(result["publication_status"], "blocked")
         self.assertIn("<Price>143900</Price>", artifacts[0]["content"])
         self.assertEqual(result["product_evidence"][0]["source_url"], URL)
+        self.assertEqual(result["product_evidence"][0]["price_rub"], 143900)
+        self.assertEqual(result["product_evidence"][0]["title"], "Fixture product")
+        self.assertIn(result["product_evidence"][0]["item_id"], artifacts[0]["content"])
 
     def test_user_supplied_price_and_duplicate_urls_cannot_override_observation(self):
         adapter = LiveDraftAdapter(self.temporary.name, None)
