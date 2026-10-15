@@ -3,6 +3,10 @@ on:
   pull_request:
     paths:
       - 'cloud_task_worker.py'
+      - 'business_machine_worker.py'
+      - 'business_machine_adapter.py'
+      - 'Dockerfile.business-machine'
+      - 'BUSINESS_MACHINE.md'
       - 'agent_queue_api.py'
       - 'avito_draft_store.py'
       - 'tests/**'

@@ -85,7 +85,7 @@ The new suite uses fake queue clients, temp directories and synthetic tokens onl
 It covers lease loss/expiry, graceful stop, outage retry, registration roles,
 idempotent concurrent replay, separate-attempt fencing, artifact integrity and
 partial-pair crash recovery. Run tests from the BM staging checkout with a minimal
-environment, no business credentials and no network. Existing GitHub Actions uses
-PR path filters that do not include the new files; wire this command into the new
-BM staging workflow in control-center. Do not change production CI or deploy from
+environment, no business credentials and no network. The existing bridge PR workflow runs the full suite for BM worker, adapter,
+Dockerfile, documentation and test changes. The control-center BM staging workflow
+also checks out this branch for a cross-repository contract test. Do not change production CI or deploy from
 the production-tracked main branch to test this worker.
