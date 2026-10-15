@@ -443,3 +443,9 @@ async def avito_live_visibility_safe() -> dict[str, Any]:
         except HTTPException as exc:
             results.append({"avito_id": item_id, "result": "api_error", "http_status": exc.status_code})
     return {"count": len(results), "items": results}
+
+
+# This opt-in worker shares the existing process and PostgreSQL queue. It does
+# not import main or change existing feed, lead-funnel or account integrations.
+from business_machine_live import register_embedded_worker
+register_embedded_worker(app, _avito_get)
