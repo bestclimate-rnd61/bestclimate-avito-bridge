@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime, timezone
 from urllib.error import URLError
 
-from business_machine_adapter import DraftAdapter
+from business_machine_adapter import ALLOWED_ACTIONS, DraftAdapter
 from business_machine_products import fetch_product
 from business_machine_worker import BusinessMachineWorker, QueueAPI, service_token_from_environment
 
@@ -61,6 +61,10 @@ class LiveDraftAdapter:
 
     def execute(self, job, ensure_lease):
         payload = job.get("payload", {})
+        if job.get("role") != "avito" or job.get("action") not in ALLOWED_ACTIONS:
+            raise ValueError("action_not_allowed")
+        if not isinstance(payload, dict):
+            raise ValueError("invalid_payload")
         if job.get("action") == "plan" and payload.get("source") == "avito-api":
             ensure_lease()
             capabilities = asyncio.run(self._capabilities())
@@ -113,7 +117,7 @@ class EmbeddedWorker:
     def status(self):
         return {"enabled": self.env.get("BM_EMBEDDED_WORKER_ENABLED") == "1", "state": self.state,
                 "thread_alive": bool(self.thread and self.thread.is_alive()),
-                "queue_registered": bool(self.worker and self.worker.worker_id),
+                "queue_registered": bool(self.state == "running" and self.worker and self.worker.worker_id),
                 "worker_id": self.worker.worker_id if self.worker else None,
                 "error_code": self.error_code, "publishing_enabled": False}
 

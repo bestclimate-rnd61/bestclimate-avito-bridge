@@ -135,6 +135,15 @@ class LiveAdapterTests(unittest.TestCase):
             adapter.execute({"role": "avito", "action": "draft", "payload": {"product_urls": [URL]}}, lost)
         self.assertEqual(called, [])
 
+    def test_forbidden_action_or_role_is_rejected_before_provider_reads(self):
+        called = []
+        adapter = LiveDraftAdapter(self.temporary.name, None, product_fetch=lambda url: called.append(url))
+        for role, action in (("avito", "publish"), ("content", "plan")):
+            with self.assertRaisesRegex(ValueError, "action_not_allowed"):
+                adapter.execute({"role": role, "action": action,
+                                 "payload": {"source": "avito-api", "product_urls": [URL]}}, lambda: None)
+        self.assertEqual(called, [])
+
 
 class SupervisorTests(unittest.TestCase):
     def test_disabled_does_not_start_and_never_reveals_environment_secrets(self):
