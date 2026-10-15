@@ -9,6 +9,10 @@ Secure server-side bridge between ChatGPT/automation workflows and the Avito Bus
 - Sensitive bridge endpoints require `X-Bridge-Secret` or `Authorization: Bearer <BRIDGE_SECRET>`.
 - The bridge remains intentionally **read-only** for live Avito data; publishing or paid actions are not enabled automatically.
 - `/avito/balance-watch` exposes only the low-balance state for automation and never exposes the wallet amount.
+- Optional Business Machine worker runs inside this existing service, uses the
+  central PostgreSQL queue, and saves private drafts only. See
+  [BUSINESS_MACHINE.md](BUSINESS_MACHINE.md); `/business-machine/status` reports
+  actual registration metadata without credentials.
 
 ## Required environment variables
 

@@ -1,6 +1,6 @@
 # Business Machine staging Avito worker
 
-This worker is a separate process: `python -m business_machine_worker`. It imports
+The standalone worker is a separate process: `python -m business_machine_worker`. It imports
 only the safe local draft store and new adapter. Do not start `main:app`, `app:app`,
 legacy recovery scripts, Telegram webhook setup or Avito API jobs for this service.
 
@@ -70,8 +70,60 @@ Persisted manifests stay metadata-only. These are private local paths, not publi
 feeds. Python reports only local safe-item/XML staging checks, qa_required=true and
 schema_validated=false; independent Node QA records its own structural evidence.
 
-Production publishing, read-only business-account adapters and object-store export
-remain separate future integrations requiring explicit account/scopes/approval.
+Production publishing and object-store export remain separate integrations
+requiring explicit account/scopes/approval. Never treat a saved XML draft as an
+accepted or published Avito listing.
+
+## Existing Railway service integration
+
+The existing FastAPI app now registers an opt-in supervised thread. It shares
+the existing service, mounted `/data` volume and central PostgreSQL queue; no
+additional Railway service or database is required. The existing Railway start
+command, feed overrides and customer integrations are preserved.
+
+Set private Railway variables `BM_API_URL` to the control-center `/bm` endpoint,
+`BM_SERVICE_TOKEN` to its avito-only worker credential, and
+`BM_EMBEDDED_WORKER_ENABLED=1`. The token is never returned by the bridge.
+`GET /business-machine/status` reports only local thread/registration metadata,
+and `publishing_enabled=false`. Queue heartbeat and completed job history provide
+the separate evidence of actual execution. Worker crashes restart a new generation;
+termination drains the active fenced attempt. New generations have unique IDs.
+
+Before any deployment, neutralize the legacy one-shot startup mutation triggers
+`AVITO_RECOVERY_TARGET`, `AVITO_RECOVERY_RETRY_TARGET`, `AVITO_OPTIMIZE_TARGET`,
+`AVITO_GROWTH_V3_ACTION`, `CPXPROMO_LOWER_TARGETS`. Leave feed configuration and
+all unrelated variables intact. They were cleared with deploys skipped during
+P1 preparation; that alone does not prove the new worker is deployed.
+
+An avito `plan` job with `payload={"source":"avito-api"}` makes actual read-only
+profile/items/autoload calls using the existing server-side adapter and records
+only verified booleans/status codes in the queue result. It also records the
+low-balance boolean without the wallet amount. Read access never proves publish
+scope, so `publication_write_verified` remains false until a separately authorized
+official publishing mechanism is verified.
+
+An avito `draft` or `validate` job may supply `payload.product_urls` (1–10 unique
+HTTPS product URLs on `bestclimate-rnd.ru`). The worker reads fresh Webasyst
+JSON-LD or main-product microdata, requires exactly one product, one exact RUB
+offer and explicit `InStock`, and derives stable IDs from source URLs. Caller
+prices/items cannot override observed data. The queue result stores source URL,
+retrieval time, page SHA256, currency and observed availability. It does not
+invent warehouse quantities or promise that storefront stock equals supplier
+stock. Ambiguous, missing, unavailable and fractional offers fail closed.
+Related-product card prices are excluded from the explicit Webasyst main object.
+
+For example, submit through the authorized central API:
+
+```json
+{"role":"avito","action":"draft","environment":"staging","mode":"dry_run",
+ "payload":{"product_urls":["https://bestclimate-rnd.ru/split-sistema-newtek-nt-65cha07/"]}}
+```
+
+This reads the current product again at execution time. Its XML remains a private
+draft with `published=false`, `publishable=false`, `schema_validated=false`,
+`publication_status=blocked`. A balance restriction never deletes prepared drafts.
+Provider-category schema, official write scope, account allowlist, approval and
+fresh price/availability checks are required before any future publication.
 
 ## Local validation and staging CI
 
