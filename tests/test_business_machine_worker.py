@@ -221,6 +221,16 @@ class WorkerTests(unittest.TestCase):
         worker = self.worker(FakeQueue())
         self.assertFalse(worker.process_one())
 
+    def test_catalog_rejection_records_precise_safe_code_without_source_body(self):
+        class RejectedCatalog:
+            def execute(self, *_):
+                raise ValueError("product_stock_not_confirmed")
+        queue = FakeQueue(make_job())
+        self.worker(queue, RejectedCatalog()).process_one()
+        failures = [body for path, body in queue.calls if path.endswith("/fail")]
+        self.assertEqual(failures[0]["errorCode"], "PRODUCT_STOCK_NOT_CONFIRMED")
+        self.assertFalse(failures[0]["retryable"])
+
     def test_heartbeat_lease_loss_discards_result_without_complete_or_fail(self):
         queue = FakeQueue(make_job())
         queue.heartbeat_error = APIError(409, False)
