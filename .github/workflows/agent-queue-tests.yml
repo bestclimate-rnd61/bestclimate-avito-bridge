@@ -12,6 +12,8 @@ on:
       - 'BUSINESS_MACHINE.md'
       - 'agent_queue_api.py'
       - 'avito_draft_store.py'
+      - 'avito_xml_qa.py'
+      - 'validate_feed_xml.py'
       - 'tests/**'
       - '.github/workflows/agent-queue-tests.yml'
   workflow_dispatch:

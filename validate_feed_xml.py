@@ -1,3 +1,4 @@
+"""Legacy single-Haier fixture assertions only; not a publication gate."""
 from pathlib import Path
 from urllib.parse import urlparse
 import xml.etree.ElementTree as ET
@@ -109,7 +110,9 @@ for err in errors:
 print(f'FEED_VALIDATION_WARNINGS {len(warnings)}')
 for warn in warnings:
     print('FEED_WARNING', warn)
-print('FEED_READY', int(not errors))
+print('VALIDATION_PROFILE legacy_haier_fixture')
+print('LEGACY_FIXTURE_VALID', int(not errors))
+print('PUBLICATION_READY', 0)
 
 if errors:
     raise SystemExit(1)
