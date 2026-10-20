@@ -1,5 +1,6 @@
 from typing import Any, Awaitable, Callable
 
+import httpx
 from fastapi import FastAPI, HTTPException
 
 
@@ -20,7 +21,13 @@ def register_growth_status(
 ) -> None:
     @app.get("/admin/autoload/growth-status", include_in_schema=False)
     async def growth_status() -> dict[str, Any]:
-        current = await avito_get("/autoload/v4/uploads/current")
+        try:
+            current = await avito_get("/autoload/v4/uploads/current")
+        except httpx.RequestError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail={"stage": "autoload_current", "error": "avito_network_unavailable"},
+            ) from exc
         items: list[dict[str, Any]] = []
         seen: set[str] = set()
 
@@ -30,6 +37,11 @@ def register_growth_status(
                     "/autoload/v4/uploads/current/items",
                     params={"page": page, "perPage": 100},
                 )
+            except httpx.RequestError as exc:
+                raise HTTPException(
+                    status_code=503,
+                    detail={"stage": "autoload_items", "error": "avito_network_unavailable"},
+                ) from exc
             except HTTPException:
                 break
             page_rows = _rows(payload)
