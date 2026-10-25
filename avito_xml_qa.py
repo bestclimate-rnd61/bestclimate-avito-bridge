@@ -22,6 +22,7 @@ class Limits:
 REQUIRED = ("Id", "Title", "Description", "Category", "Price", "Address",
             "ContactMethod", "Images")
 SCALARS = frozenset(REQUIRED) - {"Images"}
+PROTECTED_AVITO_IDS = frozenset({"8341283876"})
 
 def report(errors, count=0):
     return {
@@ -115,9 +116,13 @@ def validate_bytes(data, limits=Limits()):
             fail("duplicate_Id", path)
         ids.add(ident)
         avito_id = (ad.findtext("AvitoId") or "").strip()
+        if ident in PROTECTED_AVITO_IDS or avito_id in PROTECTED_AVITO_IDS:
+            fail("protected_ad_identity", path)
         if ad.find("AvitoId") is not None:
             if not avito_id:
                 fail("empty_AvitoId", path)
+            elif not re.fullmatch(r"[1-9][0-9]*", avito_id):
+                fail("invalid_AvitoId", path)
             elif avito_id in avito_ids:
                 fail("duplicate_AvitoId", path)
             avito_ids.add(avito_id)

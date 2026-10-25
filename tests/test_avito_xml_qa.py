@@ -36,6 +36,15 @@ class StructuralTests(unittest.TestCase):
         self.reject(feed(ad(extra="<AvitoId>11</AvitoId>") +
                          ad("b", extra="<AvitoId>11</AvitoId>")), "duplicate_AvitoId")
 
+    def test_protected_identity_in_either_field(self):
+        self.reject(feed(ad("8341283876")), "protected_ad_identity")
+        self.reject(feed(ad(extra="<AvitoId> 8341283876 </AvitoId>")), "protected_ad_identity")
+
+    def test_avito_id_is_canonical_numeric_identity(self):
+        for value in ("08341283876", "not-an-id", "0", "-1", "1.0", "\u0661"):
+            with self.subTest(value=value):
+                self.reject(feed(ad(extra=f"<AvitoId>{value}</AvitoId>")), "invalid_AvitoId")
+
     def test_duplicate_critical_and_unknown_fields(self):
         for field in ("Price", "Id", "Title", "Images", "CustomField"):
             extra = f"<{field}>123</{field}>"
